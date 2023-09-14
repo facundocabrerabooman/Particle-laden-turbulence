@@ -4,7 +4,7 @@ clear;clc;close all
 addpath(genpath('/Users/FC/Documents/GitHub/Particle-laden-turbulence'));
 
 % Set as current directory the folder with the data
-folderin = '/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/july7a';
+folderin = '/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/all_concatenated/';
 folderout = folderin;
 cd(folderin)
 
@@ -15,8 +15,25 @@ mycolormap = mycolor(8);%mycolor('#063970','#eeeee4','#e28743')
 color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,:)];
 color1 = '#476d76';
 %% Load data
-fname = 'july7a_tracers';
-load(fname);
+
+%%%%%%%%% If want to concatenate data use this
+if 1==pi
+dconc = [];
+load('/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/july7a/july7a_tracers.mat')
+dconc = vertcat(dconc,d); 
+load('/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/july7b/july7b_tracers.mat')
+dconc = vertcat(dconc,d); 
+load('/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/july7c/july7c_tracers.mat')
+dconc = vertcat(dconc,d); 
+
+d=dconc; 
+save('july7_conc','d')
+clear d
+end
+%%%%%%%%%
+
+fname = 'july7_conc';
+%load(fname);
 
 %% Track Particles (i.e. go from particle positions to trajectories)
 
@@ -26,7 +43,7 @@ flag_pred=0;
 npriormax=4;
 porder=3;
 flag_conf=1;
-numFrames = 1e6;
+numFrames = 1e99;
 
 [traj,tracks]=track3d_fc_stb(folderout,fname,maxdist,lmin,flag_pred,npriormax,porder,flag_conf, numFrames);
 
