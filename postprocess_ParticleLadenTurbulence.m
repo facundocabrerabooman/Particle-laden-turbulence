@@ -1,28 +1,45 @@
 clear;clc;close all
 
-addpath(genpath('C:\Users\Gsu\Desktop\SDT_EXP'));
-%%
-mycolormap = mycolor(8);%('#063970','#eeeee4','#e28743')
+% Set path were functions will be read from
+addpath(genpath('/Users/FC/Documents/GitHub/Particle-laden-turbulence'));
+
+% Set as current directory the folder with the data
+folderin = '/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/july7a';
+folderout = folderin;
+cd(folderin)
+
+Fs=2990; % Frame rate
+
+%% Set cool colors for plots
+mycolormap = mycolor(8);%mycolor('#063970','#eeeee4','#e28743')
 color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,:)];
 color1 = '#476d76';
-%%
-fname = 'tracer_STB';
+%% Load data
+fname = 'july7a_tracers';
 load(fname);
-%%
-frame0 = 0;
-tracer(1:frame0-1)=[];
-%%
-Fs=3000;
-%% Build track structure 
-track = part2track(tracer);
 
+%% Track Particles (i.e. go from particle positions to trajectories)
+
+maxdist = 1;  
+lmin=10;
+flag_pred=0;
+npriormax=4;
+porder=3;
+flag_conf=1;
+numFrames = 1e6;
+
+[traj,tracks]=track3d_fc_stb(folderout,fname,maxdist,lmin,flag_pred,npriormax,porder,flag_conf, numFrames);
+
+
+save('output_post_processing.mat','traj','tracks')
+clearvars -except traj Fs folderin folderout color3 color1
 %% Finding long tracks
-L = arrayfun(@(X)(numel(X.x)),track);
+L = arrayfun(@(X)(numel(X.x)),traj);
 Ilong = find(L>=10);
 %% Find proper filter width
-[s(1), m(1), w]=findFilterWidth_PTV(track(Ilong),'X');
-[s(2), m(2), w]=findFilterWidth_PTV(track(Ilong),'Y');
-[s(3), m(3), w]=findFilterWidth_PTV(track(Ilong),'Z');
+[s(1), m(1), w]=findFilterWidth_PTV(traj(Ilong),'x');
+[s(2), m(2), w]=findFilterWidth_PTV(traj(Ilong),'y');
+[s(3), m(3), w]=findFilterWidth_PTV(traj(Ilong),'z');
 %%
 figure;
 yyaxis left
@@ -52,17 +69,25 @@ ylabel('$\sigma_{a}$','interpreter','latex',FontWeight='bold',FontSize=24)
 grid on
 axis padded
 
-savefig('Std')
-saveas(gcf,'Std','png')
-save('workflow_out.mat','s','m','w')
+folderout = 'filter/';
+mkdir(folderout)
+savefig_custom([folderout 'filter_check'],8,6,'pdf')
+savefig_custom([folderout 'filter_check'],8,6,'fig')
+save('output_post_processing.mat','s','m','w','-append')
+
+clearvars -except traj Fs folderin folderout Ilong color3 color1
 %%
 wopt = 4;
 lopt = 20;
-%% Estimate smoothed tracks, velocities and accelerations with optimal filter width
-tracklong=calcVelLEM(track(Ilong),wopt,lopt,Fs);
+%% Estimate filtered tracks, velocities and accelerations with optimal filter width
+%tracklong=calcVelLEM(traj(Ilong),wopt,lopt,Fs); % does not give you time
+
+[~, tracklong]=compute_vel_acc_traj(traj(Ilong),Fs,wopt,lopt);
 
 Ine=find(arrayfun(@(X)(~isempty(X.Vx)),tracklong)==1);
 
+save('output_post_processing.mat','Ine','tracklong','-append')
+clearvars -except tracklong Ine Fs folderin folderout  color3 color1
 %% 1 time - 1 particle statistics
 %% Calculate & plot velocity and acceleration pdfs
 pdfV(1) = mkpdf5(tracklong(Ine),'Vx',256,10);
@@ -72,7 +97,9 @@ pdfV(3) = mkpdf5(tracklong(Ine),'Vz',256,10);
 pdfA(1) = mkpdf5(tracklong(Ine),'Ax',256,20);
 pdfA(2) = mkpdf5(tracklong(Ine),'Ay',256,20);
 pdfA(3) = mkpdf5(tracklong(Ine),'Az',256,20);
-%% normalized 
+
+save('output_post_processing.mat','pdfV','pdfA','-append')
+%% Plot Normalized PDFs
 figure;
 semilogy(pdfV(1).xpdfn,pdfV(1).pdfn,'d-',MarkerSize=5,Color=color3(1,:),LineWidth=2);hold on;
 semilogy(pdfV(2).xpdfn,pdfV(2).pdfn,'d-',MarkerSize=5,Color=color3(2,:),LineWidth=2);
@@ -109,85 +136,85 @@ grid on
 set(gca,FontSize=12)
 xlim([-5 5])
 
-stop
-savefig('PDFs')
-saveas(gcf,'PDFs','png')
-save('workflow_out.mat','pdfV','pdfA','-append')
-
+folderout = 'pdfs/';
+mkdir(folderout)
+savefig_custom([folderout 'PDFs'],8,6,'pdf')
+savefig_custom([folderout 'PDFs'],8,6,'fig')
 %% 
-figure;
-
-semilogy(pdfV(1).xpdf,pdfV(1).pdf,'d-',MarkerSize=5,Color=color3(1,:),LineWidth=2);hold on;
-semilogy(pdfV(2).xpdf,pdfV(2).pdf,'d-',MarkerSize=5,Color=color3(2,:),LineWidth=2);
-semilogy(pdfV(3).xpdf,pdfV(3).pdf,'d-',MarkerSize=5,Color=color3(3,:),LineWidth=2);
-
-xpdfn.V1 = linspace(-1.2,1.0,1024)*1e3;
-xpdfn.V2 = linspace(-1.0,1.0,1024)*1e3;
-xpdfn.V3 = linspace(-1.1,0.8,1024)*1e3;
-semilogy(xpdfn.V1,normpdf(xpdfn.V1,pdfV(1).mean,pdfV(1).std),'--',Color=color3(1,:),LineWidth=2);
-semilogy(xpdfn.V2,normpdf(xpdfn.V2,pdfV(2).mean,pdfV(2).std),'--',Color=color3(2,:),LineWidth=2);
-semilogy(xpdfn.V3,normpdf(xpdfn.V3,pdfV(3).mean,pdfV(3).std),'--',Color=color3(3,:),LineWidth=2);
-
-% lavision output
-% m/s to mm/s
-% load('LavisionOutput\tracers.mat')
-[pdfVL.x,xpdfVL.x] = hist(d(:,5),256); 
-[pdfVL.y,xpdfVL.y] = hist(d(:,6),256); 
-[pdfVL.z,xpdfVL.z] = hist(d(:,7),256); 
-semilogy(xpdfVL.x.*1e3,pdfVL.x/sum(pdfVL.x),'-',Color=color3(1,:),LineWidth=2); hold on
-semilogy(xpdfVL.y.*1e3,pdfVL.y/sum(pdfVL.y),'-',Color=color3(2,:),LineWidth=2); 
-semilogy(xpdfVL.z.*1e3,pdfVL.z/sum(pdfVL.z),'-',Color=color3(3,:),LineWidth=2); 
-
-set(gca,FontSize=15)
-legend('$V_x$','$V_y$','$V_z$','$Gfitx$','$Gfity$','$Gfitz$','$V_xL$','$V_yL$','$V_zL$','interpreter','latex',Location='best',FontSize=12);
-title('$PDFn$','interpreter','latex',FontWeight='bold',FontSize=18)
-ylabel('$PDF(V)$','interpreter','latex',FontWeight='bold',FontSize=18)
-xlabel('$V(mm/s)$','interpreter','latex',FontWeight='bold',FontSize=18)
-grid on
-axis padded
+% figure;
+% 
+% semilogy(pdfV(1).xpdf,pdfV(1).pdf,'d-',MarkerSize=5,Color=color3(1,:),LineWidth=2);hold on;
+% semilogy(pdfV(2).xpdf,pdfV(2).pdf,'d-',MarkerSize=5,Color=color3(2,:),LineWidth=2);
+% semilogy(pdfV(3).xpdf,pdfV(3).pdf,'d-',MarkerSize=5,Color=color3(3,:),LineWidth=2);
+% 
+% xpdfn.V1 = linspace(-1.2,1.0,1024)*1e3;
+% xpdfn.V2 = linspace(-1.0,1.0,1024)*1e3;
+% xpdfn.V3 = linspace(-1.1,0.8,1024)*1e3;
+% semilogy(xpdfn.V1,normpdf(xpdfn.V1,pdfV(1).mean,pdfV(1).std),'--',Color=color3(1,:),LineWidth=2);
+% semilogy(xpdfn.V2,normpdf(xpdfn.V2,pdfV(2).mean,pdfV(2).std),'--',Color=color3(2,:),LineWidth=2);
+% semilogy(xpdfn.V3,normpdf(xpdfn.V3,pdfV(3).mean,pdfV(3).std),'--',Color=color3(3,:),LineWidth=2);
+% 
+% % lavision output
+% % m/s to mm/s
+% % load('LavisionOutput\tracers.mat')
+% [pdfVL.x,xpdfVL.x] = hist(d(:,5),256); 
+% [pdfVL.y,xpdfVL.y] = hist(d(:,6),256); 
+% [pdfVL.z,xpdfVL.z] = hist(d(:,7),256); 
+% semilogy(xpdfVL.x.*1e3,pdfVL.x/sum(pdfVL.x),'-',Color=color3(1,:),LineWidth=2); hold on
+% semilogy(xpdfVL.y.*1e3,pdfVL.y/sum(pdfVL.y),'-',Color=color3(2,:),LineWidth=2); 
+% semilogy(xpdfVL.z.*1e3,pdfVL.z/sum(pdfVL.z),'-',Color=color3(3,:),LineWidth=2); 
+% 
+% set(gca,FontSize=15)
+% legend('$V_x$','$V_y$','$V_z$','$Gfitx$','$Gfity$','$Gfitz$','$V_xL$','$V_yL$','$V_zL$','interpreter','latex',Location='best',FontSize=12);
+% title('$PDFn$','interpreter','latex',FontWeight='bold',FontSize=18)
+% ylabel('$PDF(V)$','interpreter','latex',FontWeight='bold',FontSize=18)
+% xlabel('$V(mm/s)$','interpreter','latex',FontWeight='bold',FontSize=18)
+% grid on
+% axis padded
 
 %%
-figure
-semilogy(pdfA(1).xpdf,pdfA(1).pdf,'^-',MarkerSize=5,Color=color3(1,:),LineWidth=2);hold on
-semilogy(pdfA(2).xpdf,pdfA(2).pdf,'^-',MarkerSize=5,Color=color3(2,:),LineWidth=2);
-semilogy(pdfA(3).xpdf,pdfA(3).pdf,'^-',MarkerSize=5,Color=color3(3,:),LineWidth=2);
-
-xpdfn.A1 = linspace(-0.8e5,0.8e5,1024);
-xpdfn.A2 = linspace(-0.8e5,0.8e5,1024);
-xpdfn.A3 = linspace(-0.8e5,0.8e5,1024);
-semilogy(xpdfn.A1,normpdf(xpdfn.A1,pdfA(1).mean,pdfA(1).std),'--',MarkerSize=5,Color=color3(1,:),LineWidth=2);
-semilogy(xpdfn.A2,normpdf(xpdfn.A2,pdfA(2).mean,pdfA(2).std),'--',MarkerSize=5,Color=color3(2,:),LineWidth=2);
-semilogy(xpdfn.A3,normpdf(xpdfn.A3,pdfA(3).mean,pdfA(3).std),'--',MarkerSize=5,Color=color3(3,:),LineWidth=2);
-
-
-% lavision output
-% m/s to mm/s
-[pdfAL.x,xpdfAL.x] = hist(d(:,8),256); 
-[pdfAL.y,xpdfAL.y] = hist(d(:,9),256); 
-[pdfAL.z,xpdfAL.z] = hist(d(:,10),256); 
-semilogy(xpdfAL.x*1e3,pdfAL.x/sum(pdfAL.x),'-',Color=color3(1,:),LineWidth=2); hold on
-semilogy(xpdfAL.y*1e3,pdfAL.y/sum(pdfAL.y),'-',Color=color3(2,:),LineWidth=2); 
-semilogy(xpdfAL.z*1e3,pdfAL.z/sum(pdfAL.z),'-',Color=color3(3,:),LineWidth=2); 
-
-set(gca,FontSize=15)
-legend('$A_x$','$A_y$','$A_z$','$Gfitx$','$Gfity$','$Gfitz$','$A_xL$','$A_yL$','$A_zL$','interpreter','latex',Location='best',FontSize=12);
-title('$PDFn$','interpreter','latex',FontWeight='bold',FontSize=18)
-ylabel('$PDF(A)n$','interpreter','latex',FontWeight='bold',FontSize=18)
-xlabel('$A(mm/s^2)$','interpreter','latex',FontWeight='bold',FontSize=18)
-grid on
-axis padded
-% xlim([-5 5])
-
-% savefig('PDFs')
-% saveas(gcf,'PDFs','png')
-% save('workflow_out.mat','pdfV','pdfA','-append')
+% figure
+% semilogy(pdfA(1).xpdf,pdfA(1).pdf,'^-',MarkerSize=5,Color=color3(1,:),LineWidth=2);hold on
+% semilogy(pdfA(2).xpdf,pdfA(2).pdf,'^-',MarkerSize=5,Color=color3(2,:),LineWidth=2);
+% semilogy(pdfA(3).xpdf,pdfA(3).pdf,'^-',MarkerSize=5,Color=color3(3,:),LineWidth=2);
+% 
+% xpdfn.A1 = linspace(-0.8e5,0.8e5,1024);
+% xpdfn.A2 = linspace(-0.8e5,0.8e5,1024);
+% xpdfn.A3 = linspace(-0.8e5,0.8e5,1024);
+% semilogy(xpdfn.A1,normpdf(xpdfn.A1,pdfA(1).mean,pdfA(1).std),'--',MarkerSize=5,Color=color3(1,:),LineWidth=2);
+% semilogy(xpdfn.A2,normpdf(xpdfn.A2,pdfA(2).mean,pdfA(2).std),'--',MarkerSize=5,Color=color3(2,:),LineWidth=2);
+% semilogy(xpdfn.A3,normpdf(xpdfn.A3,pdfA(3).mean,pdfA(3).std),'--',MarkerSize=5,Color=color3(3,:),LineWidth=2);
+% 
+% 
+% % lavision output
+% % m/s to mm/s
+% [pdfAL.x,xpdfAL.x] = hist(d(:,8),256); 
+% [pdfAL.y,xpdfAL.y] = hist(d(:,9),256); 
+% [pdfAL.z,xpdfAL.z] = hist(d(:,10),256); 
+% semilogy(xpdfAL.x*1e3,pdfAL.x/sum(pdfAL.x),'-',Color=color3(1,:),LineWidth=2); hold on
+% semilogy(xpdfAL.y*1e3,pdfAL.y/sum(pdfAL.y),'-',Color=color3(2,:),LineWidth=2); 
+% semilogy(xpdfAL.z*1e3,pdfAL.z/sum(pdfAL.z),'-',Color=color3(3,:),LineWidth=2); 
+% 
+% set(gca,FontSize=15)
+% legend('$A_x$','$A_y$','$A_z$','$Gfitx$','$Gfity$','$Gfitz$','$A_xL$','$A_yL$','$A_zL$','interpreter','latex',Location='best',FontSize=12);
+% title('$PDFn$','interpreter','latex',FontWeight='bold',FontSize=18)
+% ylabel('$PDF(A)n$','interpreter','latex',FontWeight='bold',FontSize=18)
+% xlabel('$A(mm/s^2)$','interpreter','latex',FontWeight='bold',FontSize=18)
+% grid on
+% axis padded
+% % xlim([-5 5])
+% 
+% % savefig('PDFs')
+% % saveas(gcf,'PDFs','png')
 
 %% 2 times - 1 particle statistics (Lagrangian statistics)
 
-%% MSD
+%% Mean Square Separation
 MSD(1) = structFunc_struct(tracklong(Ine),'Xf',2);
 MSD(2) = structFunc_struct(tracklong(Ine),'Yf',2);
 MSD(3) = structFunc_struct(tracklong(Ine),'Zf',2);
+
+save('output_post_processing.mat','MSD','-append')
 %%
 figure;
 loglog(MSD(1).tau/Fs,MSD(1).mean,'d-',MarkerSize=8,Color=color3(1,:),LineWidth=2);hold on
@@ -197,7 +224,6 @@ loglog(MSD(3).tau/Fs,MSD(3).mean,'d-',MarkerSize=8,Color=color3(3,:),LineWidth=2
 xMSD = linspace(1,100,1000)/Fs;
 loglog(xMSD,2e5*xMSD.^2,'--',Color=color1,LineWidth=2)
 
-
 set(gca,FontSize=15)
 legend('MSDx','MSDy','MSDz',Location='best',FontSize=12)
 title('$MSD$','interpreter','latex',FontWeight='bold',FontSize=18)
@@ -206,14 +232,19 @@ xlabel('$\tau(s)$','interpreter','latex',FontWeight='bold',FontSize=24)
 text(2e-3,3,'$\tau^2$','interpreter','latex',FontWeight='bold',FontSize=18)
 grid on
 axis padded
-stop
-savefig('MSDs')
-saveas(gcf,'MSDs','png')
-save('workflow_out.mat','MSD','-append')
-%%
-[S2L(1) sig sigdt]= structFunc_struct(tracklong(Ine),'Vx',2);
-[S2L(2) sig sigdt]= structFunc_struct(tracklong(Ine),'Vy',2);
-[S2L(3) sig sigdt]= structFunc_struct(tracklong(Ine),'Vz',2);
+
+
+folderout = 'MSS/';
+mkdir(folderout)
+savefig_custom([folderout 'MSS'],8,6,'pdf')
+savefig_custom([folderout 'MSS'],8,6,'fig')
+%% Longitudinal S2
+
+S2L(1)= structFunc_struct(tracklong(Ine),'Vx',2);
+S2L(2)= structFunc_struct(tracklong(Ine),'Vy',2);
+S2L(3)= structFunc_struct(tracklong(Ine),'Vz',2);
+
+save('output_post_processing.mat','S2L','-append')
 %%
 % figure;loglog(S2Lx.tau,S2Lx.mean./S2Lx.tau/Fs/2)
 figure;
@@ -237,10 +268,13 @@ text(8e-4,1e3,'$\tau^2$','interpreter','latex',FontWeight='bold',FontSize=18)
 text(1e-2,4e4,'$\tau$','interpreter','latex',FontWeight='bold',FontSize=18)
 grid on
 axis padded
-savefig('S2L')
-saveas(gcf,'S2L','png')
-save('workflow_out.mat','S2L','-append')
-%% Correlation
+
+folderout = 'S2L/';
+mkdir(folderout)
+savefig_custom([folderout 'S2L'],8,6,'pdf')
+savefig_custom([folderout 'S2L'],8,6,'fig')
+
+%% Velocity and Acceleration Correlations
 Ruu(1) = xcorr_struct(tracklong(Ine),'Vx',1);
 Ruu(2) = xcorr_struct(tracklong(Ine),'Vy',1);
 Ruu(3) = xcorr_struct(tracklong(Ine),'Vz',1);
@@ -248,6 +282,16 @@ Ruu(3) = xcorr_struct(tracklong(Ine),'Vz',1);
 Raa(1) = xcorr_struct(tracklong(Ine),'Ax',1);
 Raa(2) = xcorr_struct(tracklong(Ine),'Ay',1);
 Raa(3) = xcorr_struct(tracklong(Ine),'Az',1);
+
+%%% another option: 
+% n=1;
+% [Rvx,D2x,Nptsvx,Ntrackvx]=lagstats_tracks(tracklong(Ine),'Vx',n,'tabsframes');
+% [Rvy,D2y,Nptsvy,Ntrackvy]=lagstats_tracks(tracklong(Ine),'Vy',n,'tabsframes');
+% [Rvz,D2z,Nptsvz,Ntrackvz]=lagstats_tracks(tracklong(Ine),'Vz',n,'tabsframes');
+% 
+% [Rax,~,Nptsax,Ntrackax]=lagstats_tracks(traj_conc_0_f,'Ax',n,'tabsframes');
+% [Ray,~,Nptsay,Ntrackay]=lagstats_tracks(traj_conc_0_f,'Ay',n,'tabsframes');
+% [Raz,~,Nptsaz,Ntrackaz]=lagstats_tracks(traj_conc_0_f,'Az',n,'tabsframes');
 
 %% Correlation fit
 Ruufit(1) = correlationFit(Ruu(1),Fs,1,100,'V');
@@ -313,14 +357,17 @@ axis tight
 ylim([-0.1 1.1])
 
 
-savefig('Corr')
-saveas(gcf,'Corr','png')
-save('workflow_out.mat','Ruu','Raa','Ruufit','Raafit','-append')
-%% 2 point statistics
-[eulerStats,pair]= twoPointsEulerianStats_Mica(tracklong(Ine),[0.5 40],50);
-% save('workflow_out.mat','eulerStats','pair','-append')
-save('eulerStats.mat','eulerStats','pair')
-%%
+folderout = 'corr/';
+mkdir(folderout)
+savefig_custom([folderout 'corr'],8,6,'pdf')
+savefig_custom([folderout 'corr'],8,6,'fig')
+save('output_post_processing.mat','Ruu','Raa','Ruufit','Raafit','-append')
+%% Eulerian 2-point statistics
+
+eulerStats= twoPointsEulerianStats_Mica(tracklong(Ine),[0.5 40],40);
+stop
+save('output_post_processing.mat','eulerStats','pair','-append')
+%% Plot
 figure;
 loglog(eulerStats.r,eulerStats.S2x,'d-',MarkerSize=8,Color=color3(1,:),LineWidth=2);hold on
 loglog(eulerStats.r,eulerStats.S2y,'d-',MarkerSize=8,Color=color3(2,:),LineWidth=2);
@@ -337,17 +384,37 @@ xlabel('$r/mm$','interpreter','latex',FontWeight='bold',FontSize=24)
 text(4,4e4,'$r^1$','interpreter','latex',FontWeight='bold',FontSize=18)
 grid on
 axis padded
-% savefig('S2E')
-% saveas(gcf,'S2E','png')
 
+folderout = 'S2euler/';
+mkdir(folderout)
+savefig_custom([folderout 'S2e'],8,6,'pdf')
+savefig_custom([folderout 'S2e'],8,6,'fig')
+
+figure;hold on;
+semilogy(eulerStats.r,(eulerStats.Splong{2}./2.1).^(3/2)./eulerStats.r'./1e6,'o-')
+%semilogy(eulerStats.r,eulerStats.Splong{2},'o-')
+grid;
+xlabel('r (mm)','Interpreter','latex');
+ylabel('$(S_2^E^\parallel / C_2 r^{2/3})^{3/2}$','Interpreter','latex');
+set(gca,'FontSize',24);
+set(gca,'Xscale','log','Yscale','log');
+title('Compensated Eulerian S2ps');
+fname = 'compensated_S2_epsilon';
+ 
+
+folderout = 'S2euler/';
+mkdir(folderout)
+savefig_custom([folderout 'S2el_compensated_epsilon'],8,6,'pdf')
+savefig_custom([folderout 'S2el_compensated_epsilon'],8,6,'fig')
 %%
 
-%% check stationnarity
-part = track2part(tracklong(Ine),{'Tf','Xf','Yf','Zf','Vx','Vy','Vz','Ax','Ay','Az'},1);
+% %% check stationnarity
+% part = track2part(tracklong(Ine),{'Tf','Xf','Yf','Zf','Vx','Vy','Vz','Ax','Ay','Az'},1);
+% 
+% %%
+% for k = 1:numel(part)
+%     Vmeanx(k) = mean(part(k).Vx);
+%     Vstdx(k) = std(part(k).Vx);
+%     T(k)=part(k).Tf(1);
+% end
 
-%%
-for k = 1:numel(part)
-    Vmeanx(k) = mean(part(k).Vx);
-    Vstdx(k) = std(part(k).Vx);
-    T(k)=part(k).Tf(1);
-end
