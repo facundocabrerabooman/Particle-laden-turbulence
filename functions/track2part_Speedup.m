@@ -1,17 +1,20 @@
 function part=track2part_Speedup(vtracks,varargin)
+% FCB changed  Tf to Tf sept 19th
+
 
 folder = pwd;
 % disp(pwd)
 
 if nargin<2
     
-    %N=arrayfun(@(X)(numel(X.Tf)),vtracks);
+    %N=arrayfun(@(X)(numel(X. Tf)),vtracks);s
     %N=arrayfun(@(X)(numel(X.frame)),vtracks);
-    N=arrayfun(@(X)(numel(X.Tf)),vtracks);
-    if isrow(vtracks(1).Tf)
-        T=[vtracks.Tf];
+    N=arrayfun(@(X)(numel(X. Tf)),vtracks);
+    %if isrow(vtracks(1). Tf)
+    if isrow(vtracks(1). Tf) 
+        T=[vtracks. Tf];
     else
-        T=vertcat(vtracks.Tf);
+        T=vertcat(vtracks. Tf);
     end
     %T=vertcat(vtracks.frame);
     %[T,I]=sort(T);
@@ -116,15 +119,15 @@ if nargin<2
 
 else
     fields = varargin{1};
-    Tfield = fields{varargin{2}};
+     Tfield = fields{varargin{2}};
     
-    N=arrayfun(@(X)(numel(X.(Tfield))),vtracks);
+    N=arrayfun(@(X)(numel(X.( Tfield))),vtracks);
     
     
-    if isrow(vtracks(1).(Tfield))
-        T=[vtracks.(Tfield)];
+    if isrow(vtracks(1).( Tfield))
+        T=[vtracks.( Tfield)];
     else
-        T=vertcat(vtracks.(Tfield));
+        T=vertcat(vtracks.( Tfield));
     end
     
     binT=unique(T);
@@ -143,7 +146,7 @@ else
     
     disp('sum up ... temp_part')
     imax = 1e5;
-    part(1:imax) = struct('T',nan,'Ntrack',nan,'Tf',nan,'Xf',nan,'Yf',nan,'Zf',nan,'Vx',nan,'Vy',nan,'Vz',nan,'Ax',nan,'Ay',nan,'Az',nan);
+    part(1:imax) = struct('T',nan,'Ntrack',nan,' Tf',nan,'Xf',nan,'Yf',nan,'Zf',nan,'Vx',nan,'Vy',nan,'Vz',nan,'Ax',nan,'Ay',nan,'Az',nan);
     for k=1:numel(binT)
         load([folder '\temp_part\temp_part_' num2str(k) '.mat']);
         part(k)= tp1;

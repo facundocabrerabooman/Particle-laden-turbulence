@@ -11,7 +11,7 @@ cd(folderin)
 Fs=2990; % Frame rate
 
 %% Set cool colors for plots
-mycolormap = mycolor(8);%mycolor('#063970','#eeeee4','#e28743')
+mycolormap = mycolor('#063970','#e28743');%('#063970','#eeeee4','#e28743')
 color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,:)];
 color1 = '#476d76';
 %% Load data
@@ -43,7 +43,7 @@ flag_pred=0;
 npriormax=4;
 porder=3;
 flag_conf=1;
-numFrames = 1e99;
+numFrames = 7e6;
 
 [traj,tracks]=track3d_fc_stb(folderout,fname,maxdist,lmin,flag_pred,npriormax,porder,flag_conf, numFrames);
 
@@ -346,12 +346,12 @@ ylabel('$R_{uu}, R_{aa}$','interpreter','latex',FontWeight='bold',FontSize=18)
 xlabel('$\tau$/s','interpreter','latex',FontWeight='bold',FontSize=24)
 grid on
 axis tight
-xlim([0 0.045])
+xlim([0 8e-3])
 ylim([-0.1 1.1])
 
 
 % add inset: zoom out 
-axes('Position',[0.4 0.3 0.3 0.2]);
+axes('Position',[0.4 0.5 0.3 0.2]);
 plot(Ruu(1).tau/Fs,Ruu(1).mean/Ruu(1).mean(1),'d',MarkerSize=3,Color=color3(1,:),LineWidth=1);hold on
 plot(Ruu(2).tau/Fs,Ruu(2).mean/Ruu(2).mean(1),'d',MarkerSize=3,Color=color3(2,:),LineWidth=1);
 plot(Ruu(3).tau/Fs,Ruu(3).mean/Ruu(3).mean(1),'d',MarkerSize=3,Color=color3(3,:),LineWidth=1);
@@ -372,17 +372,23 @@ grid on
 axis tight
 
 ylim([-0.1 1.1])
+xlim([0 1e-1])
 
 
 folderout = 'corr/';
 mkdir(folderout)
 savefig_custom([folderout 'corr'],8,6,'pdf')
 savefig_custom([folderout 'corr'],8,6,'fig')
+stop
 save('output_post_processing.mat','Ruu','Raa','Ruufit','Raafit','-append')
 %% Eulerian 2-point statistics
+clearvars -except tracklong Ine Fs
 
-eulerStats= twoPointsEulerianStats_Mica(tracklong(Ine),[0.5 40],40);
-stop
+for j=1:numel(tracklong); tracklong(j).Tf = tracklong(j).t_sec_abs; end % rename Tf field
+
+tic  
+[eulerStats, ~] = twoPointsEulerianStats_Mica_Speedup(tracklong(Ine),[0.5 40],40,'off');
+toc
 save('output_post_processing.mat','eulerStats','pair','-append')
 %% Plot
 figure;

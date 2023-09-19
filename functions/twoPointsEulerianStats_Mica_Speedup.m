@@ -1,4 +1,4 @@
-function [eulerStats pair]= twoPointsEulerianStats_Mica_Speedup(vtracks,dRminmax,Nbins,flagRead,varargin)
+function [eulerStats, pair]= twoPointsEulerianStats_Mica_Speedup(vtracks,dRminmax,Nbins,flagRead,varargin)
 
 %  Converts tracks from Clement matrices to vtrack structure
 %  Colonne 1 : position x (mm)
@@ -12,7 +12,7 @@ function [eulerStats pair]= twoPointsEulerianStats_Mica_Speedup(vtracks,dRminmax
 %  9: theta (rad) sachant que le 0 correspond à une nage vers le bas de l'image
 %  px   = 0.29 pour 1 5 10 20 30 50
 %       = 0.23 pour 29 43
-fps = 3000 ;
+fps = 2990 ;
 sparsifyratio = 10;
 if nargin>5
     Nmax = varargin{2};
@@ -29,8 +29,8 @@ dRmax = dRminmax(2);
 %vtracks = mat2vtrack(tracks,{'X','Y','T','Nt','Rho','Vx','Vy','V','Th'},4);
 
 %%
- w=2;
- L=5*w;
+ %w=2;
+ %L=5*w;
 % kerp = posfiltcoef(w,L);
 % kerv = velfiltcoef(w,L);
 % kera = accfiltcoef(w,L);
@@ -53,8 +53,8 @@ dRmax = dRminmax(2);
 %     vtracks = addStructFun(vtracks,'T','Tf',@(X)(X(floor(L/2)+1:Nmax-floor(L/2))));  
 % end
 
-eulerStats.filtW = w;
-eulerStats.filtL = L;
+%eulerStats.filtW = w;
+%eulerStats.filtL = L;
 
 %% Calculate acceleration
 
@@ -66,7 +66,8 @@ disp('part begins ... ')
 if strcmp(flagRead,'on') == 1
     load([pwd '\EulerianPart.mat']);
 elseif strcmp(flagRead,'off') == 1
-    part = track2part_Speedup(vtracks,{'Tf','Xf','Yf','Zf','Vx','Vy','Vz','Ax','Ay','Az'},1);
+    % FCB changedd Tf to t_sec_abs
+    part = track2part_Speedup(vtracks,{'t_sec_abs','Xf','Yf','Zf','Vx','Vy','Vz','Ax','Ay','Az'},1);
 else
     error('Wrong Flag of Reading Files')
 end

@@ -1,4 +1,4 @@
-function [Im_sub,Imt,Imp]=preprocessing(Im,th,part_radius,gain,bkg)
+function [Im_sub,Imt,Imp]=Facu_preprocessing(Im,th,part_radius,gain,bkg)
 
 % 03/2019 - Thomas Basset
 %Im = imcomplement(Im);
