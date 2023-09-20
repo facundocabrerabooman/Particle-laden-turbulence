@@ -123,6 +123,6 @@ edgesc = linspace(min(c)-1e-3*abs(min(c)),max(c)+1e-3*abs(max(c)),Nbinc+1);
 [mdX edges mid] = arrayfun(@(I)(histcn([a b c],edgesa,edgesb,edgesc,'AccumData',dX(:,I),'Fun',@(X)(mean(X.^power)))),1:numel(dt),'UniformOutput',false);
 bins = mid{1};
 
-pp = polyfithypercube(dt.^(power+o),mdX,1);
+pp = polyfithypercube(dt.^(power*o),mdX,1);
 mXdt = cellfun(@(C)(C(1)),pp).^(1/(power));
 mBdt = cellfun(@(C)(C(2)),pp).^(1/(power));
