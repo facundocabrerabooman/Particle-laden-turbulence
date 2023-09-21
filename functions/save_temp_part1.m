@@ -12,5 +12,5 @@ function save_temp_part1(folder_s1,vtracks_s1,fields_s1,T_s1,Ntrack_s1,binT_s1,k
         tp1.(fields_s1{kfield_s1})=X_s1(I_s1);
     end
    
-    save([folder_s1 '\temp_part\temp_part_' num2str(k_s1) '.mat'],'tp1')
+    save([folder_s1 filesep 'temp_part' filesep 'temp_part_' num2str(k_s1) '.mat'],'tp1')
 end

@@ -64,7 +64,7 @@ dRmax = dRminmax(2);
 %%
 disp('part begins ... ')
 if strcmp(flagRead,'on') == 1
-    load([pwd '\EulerianPart.mat']);
+    load([pwd filesep 'EulerianPart.mat']);
 elseif strcmp(flagRead,'off') == 1
     part = track2part_Speedup(vtracks,{'Tf','Xf','Yf','Zf','Vx','Vy','Vz','Ax','Ay','Az'},1);
 else
@@ -130,7 +130,7 @@ disp('Vmoy done !')
 %%
 disp('pair begins ... ')
 if strcmp(flagRead,'on') == 1
-    load([pwd '\EulerianPair.mat']);
+    load([pwd filesep 'EulerianPair.mat']);
 elseif strcmp(flagRead,'off') == 1
     pairAll = pairStat3D_Speedup(part);
     pair = pairAll;

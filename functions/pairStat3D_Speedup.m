@@ -11,7 +11,7 @@ function [pair,trackpair]=pairStat3D_Speedup(part)
 folder = pwd;
 % disp(pwd)
 %%
-mkdir([folder '\temp_pair'])
+mkdir([folder filesep 'temp_pair'])
 parfor k=1:numel(part)
     save_temp_pair(folder,part,k)
 end
@@ -21,12 +21,12 @@ disp('sum up ... temp_pair')
 imax = 1e4;
 pair(1:imax) = struct('dX',nan,'dY',nan,'dZ',nan,'dR2',nan,'dVx',nan,'dVy',nan,'dVz',nan,'dV2',nan,'dAx',nan,'dAy',nan,'dAz',nan,'dA2',nan,'dNtrack',nan);
 for k=1:numel(part)
-    load([folder '\temp_pair\temp_pair_' num2str(k) '.mat']);
+    load([folder filesep 'temp_pair' filesep 'temp_pair_' num2str(k) '.mat']);
     pair(k) = tp;
 end
 pair = pair(arrayfun(@(X)(~isnan(X.dX(1))),pair));
 disp('deleting ... temp_pair')
-rmdir([folder '\temp_pair'],'s')
+rmdir([folder filesep 'temp_pair'],'s')
 
 % %% part2track for pairs
 % dNtrack=[part.dNtrack];

@@ -102,7 +102,7 @@ if nargin<2
     %Ntrack=Ntrack(I);
     binT=unique(T);
     
-    mkdir([folder '\temp_part'])
+    mkdir([folder filesep 'temp_part'])
     parfor k=1:numel(binT)
         save_temp_part2(folder,T,binT,k,X,Y,Z,Vx,Vy,Vz,Ax,Ay,Az,Ntrack)
     end
@@ -110,11 +110,11 @@ if nargin<2
     disp('sum up ... temp_part')
     part = [];
     for k=1:numel(binT)
-        load([folder '\temp_part\temp_part_' num2str(k) '.mat']);
+        load([folder filesep 'temp_part' filesep 'temp_part_' num2str(k) '.mat']);
         part(k)= tp2;
     end
     disp('deleting temp_part')
-    rmdir([folder '\temp_part'],'s')
+    rmdir([folder filesep 'temp_part'],'s')
 
 
 else
@@ -139,7 +139,7 @@ else
         NN=NN+N(k);
     end
     
-    mkdir([folder '\temp_part'])
+    mkdir([folder filesep 'temp_part'])
     parfor k=1:numel(binT)
         save_temp_part1(folder,vtracks,fields,T,Ntrack,binT,k)
     end
@@ -148,11 +148,11 @@ else
     imax = 1e5;
     part(1:imax) = struct('T',nan,'Ntrack',nan, 'Tf',nan,'Xf',nan,'Yf',nan,'Zf',nan,'Vx',nan,'Vy',nan,'Vz',nan,'Ax',nan,'Ay',nan,'Az',nan);
     for k=1:numel(binT)
-        load([folder '\temp_part\temp_part_' num2str(k) '.mat']);
+        load([folder filesep 'temp_part' filesep 'temp_part_' num2str(k) '.mat']);
         part(k)= tp1;
     end
     part = part(~isnan([part.T]));
     disp('deleting ... temp_part')
-    rmdir([folder '\temp_part'],'s')
-    save([folder '\EulerianPart.mat'],'part')
+    rmdir([folder filesep 'temp_part'],'s')
+    save([folder filesep 'EulerianPart.mat'],'part')
 end
