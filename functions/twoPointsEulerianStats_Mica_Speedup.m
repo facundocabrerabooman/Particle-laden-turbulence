@@ -12,7 +12,7 @@ function [eulerStats, pair]= twoPointsEulerianStats_Mica_Speedup(vtracks,dRminma
 %  9: theta (rad) sachant que le 0 correspond à une nage vers le bas de l'image
 %  px   = 0.29 pour 1 5 10 20 30 50
 %       = 0.23 pour 29 43
-fps = 2990 ;
+%fps = 2990 ;
 sparsifyratio = 10;
 if nargin>5
     Nmax = varargin{2};
@@ -66,8 +66,7 @@ disp('part begins ... ')
 if strcmp(flagRead,'on') == 1
     load([pwd '\EulerianPart.mat']);
 elseif strcmp(flagRead,'off') == 1
-    % FCB changedd Tf to t_sec_abs
-    part = track2part_Speedup(vtracks,{'t_sec_abs','Xf','Yf','Zf','Vx','Vy','Vz','Ax','Ay','Az'},1);
+    part = track2part_Speedup(vtracks,{'Tf','Xf','Yf','Zf','Vx','Vy','Vz','Ax','Ay','Az'},1);
 else
     error('Wrong Flag of Reading Files')
 end

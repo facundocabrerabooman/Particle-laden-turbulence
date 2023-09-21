@@ -384,10 +384,11 @@ save('output_post_processing.mat','Ruu','Raa','Ruufit','Raafit','-append')
 %% Eulerian 2-point statistics
 clearvars -except tracklong Ine Fs
 
-for j=1:numel(tracklong); tracklong(j).Tf = tracklong(j).t_sec_abs; end % rename Tf field
+%for j=1:numel(tracklong); tracklong(j).Tf = tracklong(j).t_sec_abs; end % rename Tf field
 
 tic  
-[eulerStats, ~] = twoPointsEulerianStats_Mica_Speedup(tracklong(Ine),[0.5 40],40,'off');
+%[eulerStats, ~] = twoPointsEulerianStats_Mica_Speedup(tracklong(Ine),[0.5 40],40,'off');
+[eulerStats, ~] = twoPointsEulerianStats_Mica_Speedup(shrot,[0.5 40],10,'off');
 toc
 save('output_post_processing.mat','eulerStats','pair','-append')
 %% Plot

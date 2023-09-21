@@ -146,7 +146,7 @@ else
     
     disp('sum up ... temp_part')
     imax = 1e5;
-    part(1:imax) = struct('T',nan,'Ntrack',nan,' Tf',nan,'Xf',nan,'Yf',nan,'Zf',nan,'Vx',nan,'Vy',nan,'Vz',nan,'Ax',nan,'Ay',nan,'Az',nan);
+    part(1:imax) = struct('T',nan,'Ntrack',nan, 'Tf',nan,'Xf',nan,'Yf',nan,'Zf',nan,'Vx',nan,'Vy',nan,'Vz',nan,'Ax',nan,'Ay',nan,'Az',nan);
     for k=1:numel(binT)
         load([folder '\temp_part\temp_part_' num2str(k) '.mat']);
         part(k)= tp1;
