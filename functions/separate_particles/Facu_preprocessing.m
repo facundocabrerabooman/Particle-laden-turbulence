@@ -1,4 +1,4 @@
-function [Im_sub,Imt,Imp]=Facu_preprocessing(Im,th,part_radius,gain,bkg)
+function [Im_sub,Imt,Imp]=Facu_preprocessing(Im,th,radii_range,gain,bkg, intensity_thr)
 
 % 03/2019 - Thomas Basset
 %Im = imcomplement(Im);
@@ -32,5 +32,6 @@ tt = class(Im);
 Im = cast(double(Im)*gain,tt);
 
 
-[Imt,Imp]= remove_part(Im,part_radius);
+%[Imt,Imp]= remove_part(Im,part_radius);
+[Imt,Imp]= remove_part_byintensity(Im,radii_range,intensity_thr);
 % [Imt,Imp]= remove_part(Im,10);

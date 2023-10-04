@@ -43,12 +43,14 @@ for ii=1:numel(traj)
         trajf(counter).Ay = conv(d(:,2),kacc,'valid').*fps^2;
         trajf(counter).Az = conv(d(:,3),kacc,'valid').*fps^2;
 
-        trajf(counter).lengthf = numel(trajf(counter).Ax);
+        trajf(counter).Ntrackf = numel(trajf(counter).Ax);
+        trajf(counter).Ntrack = traj(ii).frames(2:end-1);
         trajf(counter).t_sec = (1:1:numel(trajf(counter).Ax))'/fps;
         trajf(counter).t = (1:1:numel(trajf(counter).Ax))';
         
         trajf(counter).t_sec_abs = (traj(ii).frames(2:end-1))./fps;
-        trajf(counter).frames = traj(ii).frames(2:end-1);
+        
+        trajf(counter).Ntrackf = traj(ii).frames(2:end-1);
         trajf(counter).w = w;
         %disp('careful with times, not absolute all start at 1')
         %figure(31), plot((1:1:numel(UVWf(:,1)))/fps,UVWf), title('translational velocity [mm/s]'),hold on

@@ -43,14 +43,14 @@ flag_pred=0;
 npriormax=4;
 porder=3;
 flag_conf=1;
-numFrames = 7e6;
+numFrames = 5e6;
 
-[traj,tracks]=track3d_fc_stb(folderout,fname,maxdist,lmin,flag_pred,npriormax,porder,flag_conf, numFrames);
+[traj,tracks]=track3d_fc_stb(folderout,fname,maxdist,lmin,flag_pred,npriormax,porder,flag_conf, numFrames, Fs);
 
 
 save('output_post_processing.mat','traj','tracks')
 clearvars -except traj Fs folderin folderout color3 color1
-%% Finding long tracks
+%% Only keep long tracks -- redundant if using track3d_fc_stb.m
 L = arrayfun(@(X)(numel(X.x)),traj);
 Ilong = find(L>=10);
 %% Find proper filter width
@@ -93,27 +93,56 @@ savefig_custom([folderout 'filter_check'],8,6,'fig')
 save('output_post_processing.mat','s','m','w','-append')
 
 clearvars -except traj Fs folderin folderout Ilong color3 color1
-%%
+%%  Estimate filtered tracks, velocities and accelerations with optimal filter width
 wopt = 4;
-lopt = 20;
-%% Estimate filtered tracks, velocities and accelerations with optimal filter width
+lopt = 12;
+
+w_acc = 10;
+l_acc = 30;
+
+%%%
 %tracklong=calcVelLEM(traj(Ilong),wopt,lopt,Fs); % does not give you time
 
-[~, tracklong]=compute_vel_acc_traj(traj(Ilong),Fs,wopt,lopt);
+%[~, tracklong]=compute_vel_acc_traj(traj(Ilong),Fs,wopt,lopt);
+
+tracklong=calcVelLEM(traj,wopt,lopt,Fs, w_acc, l_acc);
 
 Ine=find(arrayfun(@(X)(~isempty(X.Vx)),tracklong)==1);
+Ine_acc=find(arrayfun(@(X)(~isempty(X.Ax)),tracklong)==1);
 
-save('output_post_processing.mat','Ine','tracklong','-append')
+
+save([folderout filesep 'output_post_processing.mat'],'Ine','Ine_acc','tracklong','-append')
 clearvars -except tracklong Ine Fs folderin folderout  color3 color1
+
+%% Split Drop Tower data 
+
+[traj_dec, traj_ddt, traj_fullg] = split_ddt_data(folderin, folderout);
+
+save([folderout filesep 'output_post_processing.mat'],'traj_dec','traj_ddt','traj_fullg','-append')
+
+
+
+% filtered data goes up to 4.05s versus 7s before...
+
+
+
+%load([folderin filesep 'output_post_processing'],'traj_dec','traj_ddt','traj_fullg')
+
+
+tracklong = traj_ddt;
+
+
+
+
 %% 1 time - 1 particle statistics
 %% Calculate & plot velocity and acceleration pdfs
 pdfV(1) = mkpdf5(tracklong(Ine),'Vx',256,10);
 pdfV(2) = mkpdf5(tracklong(Ine),'Vy',256,10);
 pdfV(3) = mkpdf5(tracklong(Ine),'Vz',256,10);
 
-pdfA(1) = mkpdf5(tracklong(Ine),'Ax',256,20);
-pdfA(2) = mkpdf5(tracklong(Ine),'Ay',256,20);
-pdfA(3) = mkpdf5(tracklong(Ine),'Az',256,20);
+pdfA(1) = mkpdf5(tracklong(Ine_acc),'Ax',256,20);
+pdfA(2) = mkpdf5(tracklong(Ine_acc),'Ay',256,20);
+pdfA(3) = mkpdf5(tracklong(Ine_acc),'Az',256,20);
 
 save('output_post_processing.mat','pdfV','pdfA','-append')
 %% Plot Normalized PDFs
@@ -137,6 +166,14 @@ xlabel('$V, A$','interpreter','latex',FontWeight='bold',FontSize=18)
 grid on
 axis padded
 
+% text(5,1,['MeanAX = ' num2str(pdfA(1).mean)])
+% text(5,0.6,['MeanAY = ' num2str(pdfA(2).mean)])
+% text(5,0.3,['MeanAZ = ' num2str(pdfA(3).mean)])
+% 
+% text(5,0.1,['MeanVX = ' num2str(pdfV(1).mean)])
+% text(5,0.05,['MeanVY = ' num2str(pdfV(2).mean)])
+% text(5,0.03,['MeanVZ = ' num2str(pdfV(3).mean)])
+
 % add subfigure
 axes('Position',[0.22 0.62 0.22 0.22]);
 semilogy(pdfV(1).xpdfn,pdfV(1).pdfn,'d-',MarkerSize=2,Color=color3(1,:),LineWidth=2);hold on;
@@ -153,10 +190,14 @@ grid on
 set(gca,FontSize=12)
 xlim([-5 5])
 
-folderout = 'pdfs/';
+%folderout = 'pdfs/';
+folderout = 'pdfs_ddt/';
 mkdir(folderout)
 savefig_custom([folderout 'PDFs'],8,6,'pdf')
 savefig_custom([folderout 'PDFs'],8,6,'fig')
+
+%% Table with moments of distribution
+maketable(pdfA,pdfV,folderout)
 %% 
 % figure;
 % 
@@ -379,7 +420,7 @@ folderout = 'corr/';
 mkdir(folderout)
 savefig_custom([folderout 'corr'],8,6,'pdf')
 savefig_custom([folderout 'corr'],8,6,'fig')
-stop
+
 save('output_post_processing.mat','Ruu','Raa','Ruufit','Raafit','-append')
 %% Eulerian 2-point statistics
 clearvars -except tracklong Ine Fs
@@ -387,10 +428,11 @@ clearvars -except tracklong Ine Fs
 %for j=1:numel(tracklong); tracklong(j).Tf = tracklong(j).t_sec_abs; end % rename Tf field
 
 tic  
-%[eulerStats, ~] = twoPointsEulerianStats_Mica_Speedup(tracklong(Ine),[0.5 40],40,'off');
-[eulerStats, ~] = twoPointsEulerianStats_Mica_Speedup(shrot,[0.5 40],10,'off');
+[eulerStats, pair] = twoPointsEulerianStats_Mica_Speedup(tracklong(Ine),[0.5 40],40,'off');
 toc
 save('output_post_processing.mat','eulerStats','pair','-append')
+
+clearvars -except eulerStats pair tracklong Ine Fs folderin folderout color3 color1
 %% Plot
 figure;
 loglog(eulerStats.r,eulerStats.S2x,'d-',MarkerSize=8,Color=color3(1,:),LineWidth=2);hold on
