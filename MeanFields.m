@@ -4,28 +4,35 @@ clear;clc;close all
 addpath(genpath('/Users/FC/Documents/GitHub/Particle-laden-turbulence'));
 
 % Set as current directory the folder with the data
-folderin = '/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/july7a';
+folderin = '/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/all_concatenated/';
 cd(folderin)
 
 Fs=2990; % Frame rate
 
 %% Set cool colors for plots
-mycolormap = mycolor('#063970','#eeeee4','#e28743');
+mycolormap = mycolor('#063970','#e28743');%('#063970','#eeeee4','#e28743')
 color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,:)];
 color1 = '#476d76';
 %% Load data
-fname = 'july7a_tracers';
-load('output_post_processing','tracklong');
+%fname = 'july7a_tracers';
+load('tracklong','tracklong','Ine','Ine_acc');
 
+tracklong = tracklong(Ine);
 %% Get Velocity Fields
 
 folderout = [folderin filesep 'fields' filesep 'outputs' filesep];
 mkdir(folderout)
 
+for i=1:numel(tracklong)
+    tracklong(i).X = tracklong(i).x;
+    tracklong(i).Y = tracklong(i).y;
+    tracklong(i).Z = tracklong(i).z;
+end
+
 %%%%% Mean
-[mXdt, mBdt, bins] = track2meanDxDt3DProfile(tracklong,'Xf',[4 6 8 10],[10 10 10],1,1,'x','cart');
-[mYdt, ~, ~] = track2meanDxDt3DProfile(tracklong,'Yf',[4 6 8 10],[10 10 10],1,1,'y','cart');
-[mZdt, ~, ~] = track2meanDxDt3DProfile(tracklong,'Zf',[4 6 8 10],[10 10 10],1,1,'z','cart');
+[mXdt, mBdt, bins] = track2meanDxDt3DProfile(tracklong,'Xf',[2:2:50],[8 8 8],1,1,'x','cart');
+[mYdt, ~, ~] = track2meanDxDt3DProfile(tracklong,'Yf',[2:2:50],[8 8 8],1,1,'y','cart');
+[mZdt, ~, ~] = track2meanDxDt3DProfile(tracklong,'Zf',[2:2:50],[8 8 8],1,1,'z','cart');
 
 [X,Y,Z]=meshgrid(bins{1},bins{2},bins{3});
 
@@ -80,6 +87,7 @@ outputFileName = 'output_Vel_meanfields.mat';
 
 plot_fields(folderin, folderout, outputFileName)
 
+stop
 %% Plot RMS Velocity
 close all, clear all, clc
 

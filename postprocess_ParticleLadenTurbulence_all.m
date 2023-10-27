@@ -110,6 +110,7 @@ tracklong=calcVelLEM(traj,wopt,lopt,Fs, w_acc, l_acc);
 Ine=find(arrayfun(@(X)(~isempty(X.Vx)),tracklong)==1);
 Ine_acc=find(arrayfun(@(X)(~isempty(X.Ax)),tracklong)==1);
 
+save([folderout filesep 'tracklong.mat'],'Ine','Ine_acc','tracklong')
 
 save([folderout filesep 'output_post_processing.mat'],'Ine','Ine_acc','tracklong','-append')
 clearvars -except tracklong Ine Fs folderin folderout  color3 color1

@@ -97,11 +97,12 @@ savefig_FC([folderout name],8,6,'pdf')
 %%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%% Get center horizontal plane 3D
+close all
 name = 'center vertical plane2DY vertvelcolormap';
 figure;
 
 q=quiver(Y(:,5,:),Z(:,5,:),mYdt(:,5,:),mZdt(:,5,:),'r','LineWidth',2); hold on
-
+stop
 vel = reshape(mZdt(:,5,:),[10,10]);
 Ys = reshape(Y(:,5,:),[10,10]);
 Zs = reshape(Z(:,5,:),[10,10]);
