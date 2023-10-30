@@ -3,7 +3,7 @@ clear
 clc
 
 % input
-fpath0 = '/Volumes/landau1/Experiment_MP/tracers/july9b_tracers/';
+fpath0 = '/Volumes/landau1/Experiment_MP/bigbig_tungs_tracers_oct23/28oct/';
 cd(fpath0)
 %Istart = 2; % better to ignore the 1st image
  
@@ -16,9 +16,9 @@ dfolders = [];
 
 %% preproc & split
 
-dataset = 'fullg';
+%dataset = 'fullg';
 %dataset = 'ddt';
-%dataset = 'dec';
+dataset = 'dec';
 
 
 % parfor i = 1:size(dfolders,1)
@@ -27,7 +27,6 @@ for i = 1:1
     %image_list = dir([subfolders filesep '*.tiff']);
     image_list = dir([fpath filesep 'Camera1' filesep '*.tiff']);
     img_num = size(image_list,1);
-    img_num = 21900;
 
     if dataset(1) == 'f'
         Istart = 2;
@@ -73,7 +72,7 @@ for i = 1:1
     %     bkg3(285:796,321:1600) = bkg3_originalSize;
     counter = 0;
 
-    for k=2:img_num
+    for k=Istart:Iend
     %for k=Istart:Iend
         counter = counter+1;
         k/Iend
@@ -83,14 +82,14 @@ for i = 1:1
         Im1_originalSize = imread(fname);
 
         intensity_thr = 1e3;
-        [Im01,Im1t,Im1p]=Facu_preprocessing(Im1_originalSize,intensity_thr,100,1,bkg1_originalSize);
+        [Im01,Im1t,Im1p]=Facu_preprocessing(Im1_originalSize,intensity_thr,4,1,bkg1_originalSize);
         fnameo = ['cam1_frame_preproc_' num2str(counter,'%06d') '.tiff'];
         imwrite(uint16(Im1t),[preproc_dirt filesep fnameo])
-        %imwrite(uint16(Im1p),[preproc_dirp filesep fnameo]);
+        imwrite(uint16(Im1p),[preproc_dirp filesep fnameo]);
 %                 figure(10);
-%                 subplot(2,1,1);imagesc(Im1t);axis equal
+%                 subplot(2,1,1);imagesc(Im1_originalSize);axis equal
 %                 subplot(2,1,2);imagesc(Im1p);axis equal
-
+%                 pause(0.05)
 
 
         %%% cam2
@@ -99,29 +98,29 @@ for i = 1:1
         %         Im2 = cast(zeros(1080,1920),class(Im2_originalSize));
         %         Im2(285:796,321:1600) = Im2_originalSize;
         intensity_thr = 1e3;
-        [Im02,Im2t,Im2p]=Facu_preprocessing(Im2_originalSize,intensity_thr,100,2,bkg2_originalSize);
+        [Im02,Im2t,Im2p]=Facu_preprocessing(Im2_originalSize,intensity_thr,4,2,bkg2_originalSize);
         fnameo = ['cam2_frame_preproc_' num2str(counter,'%06d') '.tiff'];
         imwrite(uint16(Im2t),[preproc_dirt filesep fnameo]);
-        %imwrite(uint16(Im2p),[preproc_dirp filesep fnameo]);
+        imwrite(uint16(Im2p),[preproc_dirp filesep fnameo]);
 %                figure(10);
-%                  subplot(2,1,1);imagesc(Im2t);axis equal
+%                  subplot(2,1,1);imagesc(Im2_originalSize);axis equal
 %                  subplot(2,1,2);imagesc(Im2p);axis equal
-
+%                  pause(0.05)
 
         %%% cam3
         fname=[subfolders filesep 'Camera3' filesep 'frame_' num2str(k,'%06d') '.tiff'];
         Im3_originalSize = imread(fname);
         %         Im3 = cast(zeros(1080,1920),class(Im3_originalSize));
         %         Im3(285:796,321:1600) = Im3_originalSize;
-        intensity_thr = 5e2;
-        [Im03,Im3t,Im3p] =Facu_preprocessing(Im3_originalSize,intensity_thr,100,2,bkg3_originalSize);
+        intensity_thr = 1e3;
+        [Im03,Im3t,Im3p] =Facu_preprocessing(Im3_originalSize,intensity_thr,4,2,bkg3_originalSize);
         fnameo = ['cam3_frame_preproc_' num2str(counter,'%06d') '.tiff'];
         imwrite(uint16(Im3t),[preproc_dirt filesep fnameo]);
-       % imwrite(uint16(Im3p),[preproc_dirp filesep fnameo]);
+       imwrite(uint16(Im3p),[preproc_dirp filesep fnameo]);
 %                          figure(10);
-%                  subplot(2,1,1);imagesc(Im3t);axis equal
+%                  subplot(2,1,1);imagesc(Im3_originalSize);axis equal
 %                  subplot(2,1,2);imagesc(Im3p);axis equal
-%                  pause
+%                  pause(0.05)
 
     end
 end
