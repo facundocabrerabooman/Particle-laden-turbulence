@@ -1,7 +1,7 @@
 %% Cut calibration frames
 
-pathcalib = '/Users/FC/Aux_files/Calib_26oct23/';
-pathout = '/Users/FC/Aux_files/Calib_26oct23/cut/';
+pathcalib = 'C:\Users\meatlab1-admin\Downloads\New folder\4\raw\';
+pathout = 'C:\Users\meatlab1-admin\Downloads\New folder\4\cut\';
 mkdir(pathout)
 image_list = dir([pathcalib filesep '*.tiff']);
 

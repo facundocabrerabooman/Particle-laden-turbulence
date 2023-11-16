@@ -14,10 +14,10 @@ Im_sub = Im;
 
 % Th = th*mean(mean(Im));
 Im(Im<th)=0; %thresholding to remove the background
-Im=medfilt2(Im,[3,3]);
+%Im=medfilt2(Im,[3,3]);
 %Im = imadjust(Im,stretchlim(Im),[]);
 
-Im=imsharpen(Im,'Radius',6);
+%Im=imsharpen(Im,'Radius',6);
 %Im(Im<th)=0; %thresholding to remove the background
 
 %se=strel('disk',1); %opening to remove little elements
