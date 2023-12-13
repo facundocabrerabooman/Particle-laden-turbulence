@@ -146,4 +146,4 @@ function save_temp_pair(folder,part,k)
     tp.dA2=dA2;
     tp.dNtrack=dNtrack;
 
-    save([folder filesep 'temp_pair' filesep 'temp_pair_' num2str(k) '.mat'],'tp')
+    save([folder filesep 'temp_pair' filesep 'temp_pair_' num2str(k) '.mat'],'tp','-v7.3')

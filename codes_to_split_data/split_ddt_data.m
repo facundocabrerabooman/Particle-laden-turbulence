@@ -1,8 +1,9 @@
-function [traj_dec, traj_ddt, traj_fullg] = split_ddt_data(folderin, folderout)
+function [traj_dec, traj_ddt, traj_fullg] = split_ddt_data(folderin, folderout,tracklong,Ine)
 
 %%% Split Drop Tower Data
 
-load([folderin filesep 'output_post_processing'],'tracklong','Ine')
+%load([folderin filesep 'output_post_processing.mat'],'tracklong','Ine')
+%load([folderin filesep 'output_post_processing.mat'])
 tracklong = tracklong(Ine);
 
 idx_fullg = [];
@@ -19,7 +20,7 @@ traj_ddt = [];
 traj_dec = [];
 
 for ii = 1:numel(tracklong)
-
+ii/numel(tracklong)
     %vel(ii) = mean([mean(tracklong(ii).Vz) mean(tracklong(ii).Vy) mean(tracklong(ii).Vx)]);
     %vel = [vel;tracklong(ii).Vz];
     %t = [t;tracklong(ii).Tf];

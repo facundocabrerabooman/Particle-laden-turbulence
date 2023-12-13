@@ -60,7 +60,7 @@ eulerStats.filtL = L;
 %px = 0.23;%29 - 43
 % px = 0.29;%50 - 30
 %%
-part = track2part(vtracks,{'t_sec_abs','Xf','Yf','Zf','Vx','Vy','Vz','Ax','Ay','Az'},1);
+part = track2part(vtracks,{'Tf','Xf','Yf','Zf','Vx','Vy','Vz','Ax','Ay','Az'},1);
 
 part = addStructFun(part,'Xf','X',@(X)(X));
 part = addStructFun(part,'Yf','Y',@(X)(X));

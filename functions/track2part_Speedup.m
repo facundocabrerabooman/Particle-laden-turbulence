@@ -103,7 +103,8 @@ if nargin<2
     binT=unique(T);
     
     mkdir([folder filesep 'temp_part'])
-    parfor k=1:numel(binT)
+    %parfor k=1:numel(binT)
+    for k=1:numel(binT)
         save_temp_part2(folder,T,binT,k,X,Y,Z,Vx,Vy,Vz,Ax,Ay,Az,Ntrack)
     end
 
@@ -140,7 +141,8 @@ else
     end
     
     mkdir([folder filesep 'temp_part'])
-    parfor k=1:numel(binT)
+    %parfor k=1:numel(binT)
+    for k=1:numel(binT)
         save_temp_part1(folder,vtracks,fields,T,Ntrack,binT,k)
     end
     
@@ -154,5 +156,5 @@ else
     part = part(~isnan([part.T]));
     disp('deleting ... temp_part')
     rmdir([folder filesep 'temp_part'],'s')
-    save([folder filesep 'EulerianPart.mat'],'part')
+    save([folder filesep 'EulerianPart.mat'],'part','-v7.3')
 end

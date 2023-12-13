@@ -12,7 +12,9 @@ folder = pwd;
 % disp(pwd)
 %%
 mkdir([folder filesep 'temp_pair'])
-parfor k=1:numel(part)
+for k=1:numel(part)
+display('got rid of parfor')
+%for k=1:numel(part)
     save_temp_pair(folder,part,k)
 end
 
@@ -24,7 +26,8 @@ for k=1:numel(part)
     load([folder filesep 'temp_pair' filesep 'temp_pair_' num2str(k) '.mat']);
     pair(k) = tp;
 end
-pair = pair(arrayfun(@(X)(~isnan(X.dX(1))),pair));
+%pair = pair(arrayfun(@(X)(~isnan(X.dX(1))),pair));
+display('got rid of this line that was causing trouble')
 disp('deleting ... temp_pair')
 rmdir([folder filesep 'temp_pair'],'s')
 

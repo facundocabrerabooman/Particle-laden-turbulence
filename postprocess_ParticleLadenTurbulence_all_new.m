@@ -1,10 +1,10 @@
 clear;clc;close all
 
 % Set path were functions will be read from
-addpath(genpath('/Users/FC/Documents/GitHub/Particle-laden-turbulence'));
+addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence'));
 
 % Set as current directory the folder with the data
-folderin = '/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/all_concatenated/';
+folderin = '/Volumes/landau1/Tracers/';
 folderout = folderin;
 cd(folderin)
 
@@ -14,16 +14,37 @@ Fs=2990; % Frame rate
 mycolormap = mycolor('#063970','#e28743');%('#063970','#eeeee4','#e28743')
 color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,:)];
 color1 = '#476d76';
+%% Import data
+%if 1==pi
+
+dconc = [];
+
+d = dat_to_mat(folderin, 'TrCer_1000_15_ddt_tracers');
+dconc = vertcat(dconc,d); 
+d = dat_to_mat(folderin, 'TrCer_1000_11_ddt_tracers');
+dconc = vertcat(dconc,d); 
+
+stop
+d=dconc;
+save('TrCer_1000_15_ddt_tracers','d','-v7.3')
+clear dconc
+
+%end
+
+%d = dat_to_mat(pwd, 'TrCer_1000_15_fullg_tracers');
+%save('TrCer_1000_15_fullg_tracers','d','-v7.3')
+
+
 %% Load data
 
 %%%%%%%%% If want to concatenate data use this
 if 1==pi
 dconc = [];
-load('/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/july7a/july7a_tracers.mat')
+load('/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data/PostProcessing/july7a/july7a_tracers.mat')
 dconc = vertcat(dconc,d); 
-load('/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/july7b/july7b_tracers.mat')
+load('/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data/PostProcessing/july7b/july7b_tracers.mat')
 dconc = vertcat(dconc,d); 
-load('/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/july7c/july7c_tracers.mat')
+load('/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data/PostProcessing/july7c/july7c_tracers.mat')
 dconc = vertcat(dconc,d); 
 
 d=dconc; 
@@ -36,6 +57,7 @@ fname = 'july7_conc';
 %load(fname);
 
 %% Track Particles (i.e. go from particle positions to trajectories)
+fname = 'TrCer_1000_15_ddt_tracers';
 
 maxdist = 1;  
 lmin=10;
@@ -43,12 +65,11 @@ flag_pred=0;
 npriormax=4;
 porder=3;
 flag_conf=1;
-numFrames = 5e6;
+numFrames = 9e9;
 
-[traj,tracks]=track3d_fc_stb(folderout,fname,maxdist,lmin,flag_pred,npriormax,porder,flag_conf, numFrames, Fs);
+[traj,tracks]=track3d_fc_stb(folderin,folderout,fname,maxdist,lmin,flag_pred,npriormax,porder,flag_conf, numFrames, Fs);
 
-
-save('output_post_processing.mat','traj','tracks')
+save('trajs_TrCer_1000_15_ddt_tracers.mat','traj','tracks')
 clearvars -except traj Fs folderin folderout color3 color1
 %% Only keep long tracks -- redundant if using track3d_fc_stb.m
 L = arrayfun(@(X)(numel(X.x)),traj);
@@ -90,35 +111,42 @@ folderout = 'filter/';
 mkdir(folderout)
 savefig_custom([folderout 'filter_check'],8,6,'pdf')
 savefig_custom([folderout 'filter_check'],8,6,'fig')
+stop
 save('output_post_processing.mat','s','m','w','-append')
 
 clearvars -except traj Fs folderin folderout Ilong color3 color1
 %%  Estimate filtered tracks, velocities and accelerations with optimal filter width
-wopt = 4;
-lopt = 12;
+clc
+wopt = 5;
+lopt = 15;
 
-w_acc = 10;
-l_acc = 30;
+Fs = 2990;
 
 %%%
 %tracklong=calcVelLEM(traj(Ilong),wopt,lopt,Fs); % does not give you time
 
 %[~, tracklong]=compute_vel_acc_traj(traj(Ilong),Fs,wopt,lopt);
 
-tracklong=calcVelLEM(traj,wopt,lopt,Fs, w_acc, l_acc);
+tracklong=calcVelLEM(traj_conc,wopt,lopt,Fs, wopt, lopt);
 
 Ine=find(arrayfun(@(X)(~isempty(X.Vx)),tracklong)==1);
 Ine_acc=find(arrayfun(@(X)(~isempty(X.Ax)),tracklong)==1);
 
-
-save([folderout filesep 'output_post_processing.mat'],'Ine','Ine_acc','tracklong','-append')
-clearvars -except tracklong Ine Fs folderin folderout  color3 color1
+%save([folderout filesep 'trajs_TrCer_1000_11_ddt_tracers.mat'],'Ine','Ine_acc','tracklong','-append')
+save('trajs_TrCer_1000_11_ddt_tracers.mat','Ine','Ine_acc','tracklong','-append')
+stop
+%save([folderout filesep 'output_post_processing.mat'],'Ine','Ine_acc','tracklong','-append')
+save([folderout filesep 'output_post_processing.mat'],'Ine','Ine_acc','tracklong','-v7.3')
+clearvars -except tracklong Ine Fs folderin folderout  color3 color1 Ine_acc
 
 %% Split Drop Tower data 
 
 [traj_dec, traj_ddt, traj_fullg] = split_ddt_data(folderin, folderout);
+%Ine=find(arrayfun(@(X)(~isempty(X.Vx)),tracklong)==1);
+%Ine_acc=find(arrayfun(@(X)(~isempty(X.Ax)),tracklong)==1);
 
-save([folderout filesep 'output_post_processing.mat'],'traj_dec','traj_ddt','traj_fullg','-append')
+stop
+save([folderout filesep 'output_post_processing.mat'],'traj_dec','traj_ddt','traj_fullg','-append','-v7.3')
 
 
 
@@ -129,8 +157,7 @@ save([folderout filesep 'output_post_processing.mat'],'traj_dec','traj_ddt','tra
 %load([folderin filesep 'output_post_processing'],'traj_dec','traj_ddt','traj_fullg')
 
 
-tracklong = traj_ddt;
-
+%tracklong = traj_ddt;
 
 
 
@@ -143,7 +170,7 @@ pdfV(3) = mkpdf5(tracklong(Ine),'Vz',256,10);
 pdfA(1) = mkpdf5(tracklong(Ine_acc),'Ax',256,20);
 pdfA(2) = mkpdf5(tracklong(Ine_acc),'Ay',256,20);
 pdfA(3) = mkpdf5(tracklong(Ine_acc),'Az',256,20);
-
+stop
 save('output_post_processing.mat','pdfV','pdfA','-append')
 %% Plot Normalized PDFs
 figure;
@@ -190,6 +217,7 @@ grid on
 set(gca,FontSize=12)
 xlim([-5 5])
 
+stop
 %folderout = 'pdfs/';
 folderout = 'pdfs_ddt/';
 mkdir(folderout)
@@ -333,13 +361,14 @@ savefig_custom([folderout 'S2L'],8,6,'pdf')
 savefig_custom([folderout 'S2L'],8,6,'fig')
 
 %% Velocity and Acceleration Correlations
+disp('corr')
 Ruu(1) = xcorr_struct(tracklong(Ine),'Vx',1);
 Ruu(2) = xcorr_struct(tracklong(Ine),'Vy',1);
 Ruu(3) = xcorr_struct(tracklong(Ine),'Vz',1);
 
-Raa(1) = xcorr_struct(tracklong(Ine),'Ax',1);
-Raa(2) = xcorr_struct(tracklong(Ine),'Ay',1);
-Raa(3) = xcorr_struct(tracklong(Ine),'Az',1);
+Raa(1) = xcorr_struct(tracklong(Ine_acc),'Ax',1);
+Raa(2) = xcorr_struct(tracklong(Ine_acc),'Ay',1);
+Raa(3) = xcorr_struct(tracklong(Ine_acc),'Az',1);
 
 %%% another option: 
 % n=1;
@@ -352,6 +381,7 @@ Raa(3) = xcorr_struct(tracklong(Ine),'Az',1);
 % [Raz,~,Nptsaz,Ntrackaz]=lagstats_tracks(traj_conc_0_f,'Az',n,'tabsframes');
 
 %% Correlation fit
+Fs=2990;
 Ruufit(1) = correlationFit(Ruu(1),Fs,1,100,'V');
 Ruufit(2) = correlationFit(Ruu(2),Fs,1,100,'V');
 Ruufit(3) = correlationFit(Ruu(3),Fs,1,100,'V');
@@ -415,7 +445,7 @@ axis tight
 ylim([-0.1 1.1])
 xlim([0 1e-1])
 
-
+stop
 folderout = 'corr/';
 mkdir(folderout)
 savefig_custom([folderout 'corr'],8,6,'pdf')
@@ -423,9 +453,9 @@ savefig_custom([folderout 'corr'],8,6,'fig')
 
 save('output_post_processing.mat','Ruu','Raa','Ruufit','Raafit','-append')
 %% Eulerian 2-point statistics
-clearvars -except tracklong Ine Fs
+clearvars -except tracklong Ine Ine_acc Fs color1 color3 folderin folderout mycolormap
 
-for j=1:numel(tracklong); tracklong(j).Tf = tracklong(j).t_sec_abs; end % rename Tf field
+%for j=1:numel(tracklong); tracklong(j).Tf = tracklong(j).t_sec_abs; end % rename Tf field
 
 tic  
 [eulerStats, pair] = twoPointsEulerianStats_Mica_Speedup(tracklong(Ine),[0.5 40],40,'off');

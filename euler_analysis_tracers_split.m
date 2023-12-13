@@ -1,0 +1,450 @@
+clear;clc;close all
+
+% Set path were functions will be read from
+addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence'));
+
+fname = 'all_conc';
+
+folderin = '/Volumes/landau1/Tracers/ddt_filtered_w10';
+folderout = folderin;
+cd(folderin)
+
+Fs=2990; % Frame rate
+
+%% Concatenate data
+
+if pi==pi
+    trajs_conc = [];
+    
+    load('trajs_TrCer_1000_11_ddt_tracers.mat')
+    trajs_conc = [trajs_conc tracklong];
+    1
+    load('trajs_TrCer_1000_13_ddt_tracers.mat')
+    trajs_conc = [trajs_conc tracklong];
+    2
+    load('trajs_TrCer_1000_14_ddt_tracers.mat')
+    trajs_conc = [trajs_conc tracklong];
+    3
+    load('trajs_TrCer_1000_15_ddt_tracers.mat')
+    trajs_conc = [trajs_conc tracklong];
+    4
+
+    
+    % load('trajs_TrCer_1000_noturb.mat')
+    % trajs_conc = [trajs_conc tracklong];
+    
+    % load('ddt_july3.mat')
+    % trajs_conc = [trajs_conc traj_ddt];
+    % numel(trajs_conc)
+    % 3
+    % load('ddt_july7a.mat')
+    % trajs_conc = [trajs_conc traj_ddt];
+    % numel(trajs_conc)
+    % 4
+    % load('ddt_july7b.mat')
+    % trajs_conc = [trajs_conc traj_ddt];
+    % numel(trajs_conc)
+    % 5
+    % load('ddt_july7c.mat')
+    % trajs_conc = [trajs_conc traj_ddt];
+    % numel(trajs_conc)
+    % 6
+    % load('ddt_july9b.mat')
+    % trajs_conc = [trajs_conc traj_ddt];
+    % numel(trajs_conc)
+    % 7
+
+    Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc)==1);
+end
+clear tracklong traj_ddt
+%save('traj_conc_tracers_ddt','trajs_conc','Ine','-v7.3')
+
+%% Get Mean Velocity 
+
+for i=1:numel(trajs_conc)
+    trajs_conc(i).X = trajs_conc(i).x;
+    trajs_conc(i).Y = trajs_conc(i).y;
+    trajs_conc(i).Z = trajs_conc(i).z;
+end
+
+[U, mBdt, bins] = track2meanDxDt3DProfile(trajs_conc,'Xf',2:2:50,[20 20 20],1,1,'x','cart');
+[V, ~, ~] = track2meanDxDt3DProfile(trajs_conc,'Yf',2:2:50,[20 20 20],1,1,'y','cart');
+[W, ~, ~] = track2meanDxDt3DProfile(trajs_conc,'Zf',2:2:50,[20 20 20],1,1,'z','cart');
+
+[X,Y,Z]=meshgrid(bins{1},bins{2},bins{3});
+
+U=U.*Fs;
+V=V.*Fs;
+W=W.*Fs;
+
+%save('output_Vel_meanfields','U','V','W','mBdt','bins','X','Y','Z')
+
+
+trajs_conc_minus_mean_field = find_closest_bin(trajs_conc, X, Y, Z, U, V, W);
+Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc_minus_mean_field)==1);
+
+
+%save('trajs_conc_minus_mean_field','trajs_conc_minus_mean_field','-v7.3')
+%%
+mycolormap = mycolor('#063970','#e28743');%('#063970','#eeeee4','#e28743')
+color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,:)];
+color1 = '#476d76';
+
+%% Eulerian 2-point statistics
+clc
+%for j=1:numel(trajs_conc_minus_mean_field); trajs_conc_minus_mean_field(j).t_sec_abs = trajs_conc_minus_mean_field(j).t_sec_abs; end % rename Tf field
+
+a = round(numel(trajs_conc_minus_mean_field(Ine))/10);
+
+
+%[eulerStats1, pair1] = twoPointsEulerianStats_Mica_Speedup(trajs_conc_minus_mean_field(Ine(1:a)),[0.5 40],40,'off');
+eulerStats1= twoPointsEulerianStats_Mica(trajs_conc_minus_mean_field(Ine(1:a)),[0.5 40],40); % if data in mm
+1
+save('eulerstats1','eulerStats1','-v7.3')
+eulerStats2 = twoPointsEulerianStats_Mica(trajs_conc_minus_mean_field(Ine(a:2*a)),[0.5 40],40,'off');
+2
+save('eulerstats2','eulerStats2','-v7.3')
+eulerStats3 = twoPointsEulerianStats_Mica(trajs_conc_minus_mean_field(Ine(2*a:3*a)),[0.5 40],40,'off');
+3
+save('eulerstats3','eulerStats3','-v7.3')
+eulerStats4 = twoPointsEulerianStats_Mica(trajs_conc_minus_mean_field(Ine(3*a:4*a)),[0.5 40],40,'off');
+4
+save('eulerstats4','eulerStats4','-v7.3')
+
+%% compute ensemble average:
+
+% Assuming you have four structures: eulerStats1, eulerStats2, eulerStats3, and eulerStats4
+
+% Initialize the new structure
+averageStats = struct();
+
+% List of fields to average
+fieldsToAverage = {'Vmoy', 'VmoyX', 'VmoyY', 'VmoyZ', 'Vstd', 'VstdX', 'VstdY', 'VstdZ', ...
+                   'Amoy', 'AmoyX', 'AmoyY', 'AmoyZ', 'Astd', 'AstdX', 'AstdY', 'AstdZ', ...
+                   'sigmaV', 'r', 'S2x', 'S2y', 'S2z', 'Splong', 'SplongAbs', 'Sau', 'Saulong', ...
+                   'sigmaVb', 'Ruur', 'Ruu', 'PSDk', 'PSD'};
+
+% Loop through each field and compute the average
+for fieldIdx = 1:numel(fieldsToAverage)
+    field = fieldsToAverage{fieldIdx};
+    
+    % Handle special case for cell arrays
+    if iscell(eulerStats1.(field))
+        cellLength = numel(eulerStats1.(field));
+        averageCell = cell(1, cellLength);
+        
+        for cellIdx = 1:cellLength
+            values1 = eulerStats1.(field){cellIdx};
+            values2 = eulerStats2.(field){cellIdx};
+            values3 = eulerStats3.(field){cellIdx};
+            values4 = eulerStats4.(field){cellIdx};
+            
+            % Check if sizes are the same before averaging
+            if isequal(size(values1), size(values2), size(values3), size(values4))
+                % Compute the average for each cell member
+                averageCell{cellIdx} = (values1 + values2 + values3 + values4) / 4;
+            else
+                % Handle the case where sizes are not the same
+                fprintf('Sizes of %s are not the same. Skipping this field.\n', field);
+                averageCell{cellIdx} = [];  % Placeholder for the skipped field
+            end
+        end
+        
+        % Assign the averaged cell to the new structure
+        averageStats.(field) = averageCell;
+    else
+        % Extract the field values from all four structures
+        values1 = eulerStats1.(field);
+        values2 = eulerStats2.(field);
+        values3 = eulerStats3.(field);
+        values4 = eulerStats4.(field);
+        
+        % Check if sizes are the same before averaging
+        if isequal(size(values1), size(values2), size(values3), size(values4))
+            % Compute the average for non-cell fields
+            averageStats.(field) = (values1 + values2 + values3 + values4) / 4;
+        else
+            % Handle the case where sizes are not the same
+            fprintf('Sizes of %s are not the same. Skipping this field.\n', field);
+        end
+    end
+end
+
+% Display or use the results as needed
+disp('Average Structure:');
+disp(averageStats);
+
+eulerStats = averageStats; clear averageStats
+
+%eulerStats = eulerStats1;
+save('average_eulerStats.mat','eulerStats','pair')
+
+%% Plot
+figure;
+loglog(eulerStats.r,eulerStats.S2x,'d-',MarkerSize=8,Color=color3(1,:),LineWidth=2);hold on
+loglog(eulerStats.r,eulerStats.S2y,'d-',MarkerSize=8,Color=color3(2,:),LineWidth=2);
+loglog(eulerStats.r,eulerStats.S2z,'d-',MarkerSize=8,Color=color3(3,:),LineWidth=2);
+
+rS2E = linspace(0.5,40,100);
+loglog(rS2E,6e3*rS2E.^1,'--',Color=color1,LineWidth=2)
+
+set(gca,FontSize=15)
+legend('$S_2^E(x)$','$S_2^E(y)$','$S_2^E(z)$','interpreter','latex',Location='best',FontSize=12)
+title('$S_2^E$','interpreter','latex',FontWeight='bold',FontSize=18)
+ylabel('$S_2^E$','interpreter','latex',FontWeight='bold',FontSize=18)
+xlabel('$r/mm$','interpreter','latex',FontWeight='bold',FontSize=24)
+text(4,4e4,'$r^1$','interpreter','latex',FontWeight='bold',FontSize=18)
+grid on
+axis padded
+
+folderout = 'S2euler/';
+mkdir(folderout)
+savefig_custom([folderout 'S2e'],8,6,'pdf')
+savefig_custom([folderout 'S2e'],8,6,'fig')
+
+figure;hold on;
+semilogy(eulerStats.r,(eulerStats.Splong{2}./2.1).^(3/2)./eulerStats.r'./1e6,'o-')
+%semilogy(eulerStats.r,eulerStats.Splong{2},'o-')
+grid;
+xlabel('r (mm)','Interpreter','latex');
+ylabel('$(S_2^E^\parallel / C_2 r^{2/3})^{3/2}$','Interpreter','latex');
+set(gca,'FontSize',24);
+set(gca,'Xscale','log','Yscale','log');
+title('Compensated Eulerian S2ps');
+fname = 'compensated_S2_epsilon';
+ 
+
+folderout = 'S2euler/';
+mkdir(folderout)
+savefig_custom([folderout 'S2el_compensated_epsilon'],8,6,'pdf')
+savefig_custom([folderout 'S2el_compensated_epsilon'],8,6,'fig')
+
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Added on 10/04/2023
+%% don't forget to change the figure saving parts ..
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% plot VAt (to check stationary)
+
+figure
+t=tiledlayout(4,1,'TileSpacing','tight');
+nexttile;
+plot(eulerStats.Vmoy,'d-',MarkerSize=3,Color=color1(1,:),LineWidth=1);hold on
+plot(eulerStats.VmoyX,'-',MarkerSize=3,Color=color3(1,:),LineWidth=1);
+plot(eulerStats.VmoyY,'-',MarkerSize=3,Color=color3(2,:),LineWidth=1);
+plot(eulerStats.VmoyZ,'-',MarkerSize=3,Color=color3(3,:),LineWidth=1);
+set(gca,FontSize=15)
+legend('$\langle \sqrt{x^2+y^2+z^2} \rangle$','$\langle x \rangle$','$\langle y \rangle$','$\langle z \rangle$','interpreter','latex',Location='best',FontSize=10);
+title('$|V|, \sigma_V, |A|,\sigma_A$','interpreter','latex',FontWeight='bold',FontSize=18)
+ylabel('$|V|$','interpreter','latex',FontWeight='bold',FontSize=18)
+axis tight
+xticklabels([])
+grid on
+
+nexttile;
+plot(eulerStats.Vstd,'d-',MarkerSize=3,Color=color1(1,:),LineWidth=1);hold on
+plot(eulerStats.VstdX,'-',MarkerSize=3,Color=color3(1,:),LineWidth=1);
+plot(eulerStats.VstdY,'-',MarkerSize=3,Color=color3(2,:),LineWidth=1);
+plot(eulerStats.VstdZ,'-',MarkerSize=3,Color=color3(3,:),LineWidth=1);
+set(gca,FontSize=15)
+ylabel('$\sigma_V$','interpreter','latex',FontWeight='bold',FontSize=18)
+axis tight
+xticklabels([])
+grid on
+
+nexttile;
+plot(eulerStats.Amoy,'d-',MarkerSize=3,Color=color1(1,:),LineWidth=1);hold on
+plot(eulerStats.AmoyX,'-',MarkerSize=3,Color=color3(1,:),LineWidth=1);
+plot(eulerStats.AmoyY,'-',MarkerSize=3,Color=color3(2,:),LineWidth=1);
+plot(eulerStats.AmoyZ,'-',MarkerSize=3,Color=color3(3,:),LineWidth=1);
+set(gca,FontSize=15)
+ylabel('$|A|$','interpreter','latex',FontWeight='bold',FontSize=18)
+axis tight
+xticklabels([])
+grid on
+
+nexttile;
+plot(eulerStats.Astd,'d-',MarkerSize=3,Color=color1(1,:),LineWidth=1);hold on
+plot(eulerStats.AstdX,'-',MarkerSize=3,Color=color3(1,:),LineWidth=1);
+plot(eulerStats.AstdY,'-',MarkerSize=3,Color=color3(2,:),LineWidth=1);
+plot(eulerStats.AstdZ,'-',MarkerSize=3,Color=color3(3,:),LineWidth=1);
+set(gca,FontSize=15)
+ylabel('$\sigma_A$','interpreter','latex',FontWeight='bold',FontSize=18)
+xlabel('$t/s$','interpreter','latex',FontWeight='bold',FontSize=18)
+axis tight
+xticks(0:Fs/10:size(eulerStats.Astd,2))
+xticklabels(num2cell([0:Fs/10:size(eulerStats.Astd,2)]/Fs))
+grid on
+
+
+linkaxes(t.Children,'x')
+
+% figname = ['./' fout '/VAt'];
+% savefig(figname)
+% saveas(gcf,figname,'png')
+% saveas(gcf,figname,'pdf')
+
+%% plot Spn_abs
+color5 = [mycolormap(1,:);mycolormap(round((size(mycolormap,1)+1)/4),:);mycolormap(round(2*(size(mycolormap,1)+1)/4),:);mycolormap(round(3*(size(mycolormap,1)+1)/4),:);mycolormap(end,:)];
+
+figure;
+loglog(eulerStats.r,eulerStats.SplongAbs{1,1},'d-',MarkerSize=8,Color=color5(1,:),LineWidth=2);hold on
+loglog(eulerStats.r,eulerStats.SplongAbs{1,2},'d-',MarkerSize=8,Color=color5(2,:),LineWidth=2);
+loglog(eulerStats.r,eulerStats.SplongAbs{1,3},'d-',MarkerSize=8,Color=color5(3,:),LineWidth=2);
+loglog(eulerStats.r,eulerStats.SplongAbs{1,4},'d-',MarkerSize=8,Color=color5(4,:),LineWidth=2);
+loglog(eulerStats.r,eulerStats.SplongAbs{1,5},'d-',MarkerSize=8,Color=color5(5,:),LineWidth=2);
+
+rSplong = linspace(0.4,100,100);
+loglog(rSplong,6e1*rSplong.^(1/3),'--',Color=color1,LineWidth=2)
+loglog(rSplong,5e3*rSplong.^(2/3),'--',Color=color1,LineWidth=2)
+loglog(rSplong,9e5*rSplong.^(3/3),'--',Color=color1,LineWidth=2)
+loglog(rSplong,1e8*rSplong.^(4/3),'--',Color=color1,LineWidth=2)
+loglog(rSplong,3e10*rSplong.^(5/3),'--',Color=color1,LineWidth=2)
+
+set(gca,FontSize=15)
+legend('$S_1^{\parallel}$','$S_2^{\parallel}$','$S_3^{\parallel}$','$S_4^{\parallel}$','$S_5^{\parallel}$','interpreter','latex',Location='best',FontSize=12)
+title('$S_n^{\parallel}$','interpreter','latex',FontWeight='bold',FontSize=18)
+ylabel('$S_n^{\parallel}$','interpreter','latex',FontWeight='bold',FontSize=18)
+xlabel('$r/mm$','interpreter','latex',FontWeight='bold',FontSize=24)
+text(8,5e12,'$r^{5/3}$','interpreter','latex',FontWeight='bold',FontSize=18)
+text(8,2e10,'$r^{4/3}$','interpreter','latex',FontWeight='bold',FontSize=18)
+text(8,5e7,'$r^{3/3}$','interpreter','latex',FontWeight='bold',FontSize=18)
+text(8,3e5,'$r^{2/3}$','interpreter','latex',FontWeight='bold',FontSize=18)
+text(8,5e2,'$r^{1/3}$','interpreter','latex',FontWeight='bold',FontSize=18)
+grid on
+axis padded
+
+% figname = ['./' fout '/SplongAbs'];
+% savefig(figname)
+% saveas(gcf,figname,'png')
+% saveas(gcf,figname,'pdf')
+
+%% plot Spn
+figure;
+loglog(eulerStats.r,eulerStats.Splong{1,1},'d-',MarkerSize=8,Color=color5(1,:),LineWidth=1);hold on
+loglog(eulerStats.r,eulerStats.Splong{1,2},'d-',MarkerSize=8,Color=color5(2,:),LineWidth=1);
+loglog(eulerStats.r,eulerStats.Splong{1,3},'d-',MarkerSize=8,Color=color5(3,:),LineWidth=1);
+loglog(eulerStats.r,eulerStats.Splong{1,4},'d-',MarkerSize=8,Color=color5(4,:),LineWidth=1);
+loglog(eulerStats.r,eulerStats.Splong{1,5},'d-',MarkerSize=8,Color=color5(5,:),LineWidth=1);
+
+rSplong = linspace(0.4,100,100);
+loglog(rSplong,6e1*rSplong.^(1/3),'--',Color=color1,LineWidth=1)
+loglog(rSplong,5e3*rSplong.^(2/3),'--',Color=color1,LineWidth=1)
+loglog(rSplong,9e5*rSplong.^(3/3),'--',Color=color1,LineWidth=1)
+loglog(rSplong,1e8*rSplong.^(4/3),'--',Color=color1,LineWidth=1)
+loglog(rSplong,3e10*rSplong.^(5/3),'--',Color=color1,LineWidth=1)
+
+set(gca,FontSize=15)
+legend('$S_1^{\parallel}$','$S_2^{\parallel}$','$S_3^{\parallel}$','$S_4^{\parallel}$','$S_5^{\parallel}$','interpreter','latex',Location='best',FontSize=12)
+title('$S_n^{\parallel}$','interpreter','latex',FontWeight='bold',FontSize=18)
+ylabel('$S_n^{\parallel}$','interpreter','latex',FontWeight='bold',FontSize=18)
+xlabel('$r/mm$','interpreter','latex',FontWeight='bold',FontSize=24)
+text(8,5e12,'$r^{5/3}$','interpreter','latex',FontWeight='bold',FontSize=18)
+text(8,2e10,'$r^{4/3}$','interpreter','latex',FontWeight='bold',FontSize=18)
+text(8,5e7,'$r^{3/3}$','interpreter','latex',FontWeight='bold',FontSize=18)
+text(8,3e5,'$r^{2/3}$','interpreter','latex',FontWeight='bold',FontSize=18)
+text(8,5e2,'$r^{1/3}$','interpreter','latex',FontWeight='bold',FontSize=18)
+grid on
+axis padded
+
+% figname = ['./' fout '/Splong'];
+% savefig(figname)
+% saveas(gcf,figname,'png')
+% saveas(gcf,figname,'pdf')
+
+%% plot Sau
+figure
+semilogx(eulerStats.r,eulerStats.Sau,'d-',MarkerSize=8,Color=color3(1,:),LineWidth=1);hold on
+semilogx(eulerStats.r,eulerStats.Saulong,'d-',MarkerSize=8,Color=color3(3,:),LineWidth=1);hold on
+
+set(gca,FontSize=15)
+legend('$S_{au}$','$S_{au}^{\parallel}$','interpreter','latex',Location='best',FontSize=12)
+title('$S_{au}, S_{au}^{\parallel}$','interpreter','latex',FontWeight='bold',FontSize=18)
+ylabel('$S_{au}, S_{au}^{\parallel}$','interpreter','latex',FontWeight='bold',FontSize=18)
+xlabel('$r/mm$','interpreter','latex',FontWeight='bold',FontSize=24)
+grid on
+axis padded
+
+% figname = ['./' fout '/Sau'];
+% savefig(figname)
+% saveas(gcf,figname,'png')
+% saveas(gcf,figname,'pdf')
+
+%% plot S2E
+figure;
+loglog(eulerStats.r,eulerStats.S2x,'d-',MarkerSize=8,Color=color3(1,:),LineWidth=1);hold on
+loglog(eulerStats.r,eulerStats.S2y,'d-',MarkerSize=8,Color=color3(2,:),LineWidth=1);
+loglog(eulerStats.r,eulerStats.S2z,'d-',MarkerSize=8,Color=color3(3,:),LineWidth=1);
+
+loglog(eulerStats.r,7e3*eulerStats.r.^(2/3),'--',Color=color1,LineWidth=1)
+
+set(gca,FontSize=15)
+legend('$S_2^E(x)$','$S_2^E(y)$','$S_2^E(z)$','interpreter','latex',Location='best',FontSize=12)
+title('$S_2^E$','interpreter','latex',FontWeight='bold',FontSize=18)
+ylabel('$S_2^E$','interpreter','latex',FontWeight='bold',FontSize=18)
+xlabel('$r/mm$','interpreter','latex',FontWeight='bold',FontSize=24)
+text(3,3e4,'$r^{2/3}$','interpreter','latex',FontWeight='bold',FontSize=18)
+grid on
+axis padded
+
+% figname = ['./' fout '/S2E'];
+% savefig(figname)
+% saveas(gcf,figname,'png')
+% saveas(gcf,figname,'pdf')
+%% plot epsilon
+Ckolomogrov = 2.1;
+figure;
+loglog(eulerStats.r,(eulerStats.Splong{1,2}./Ckolomogrov).^(1.5)./eulerStats.r','d-',MarkerSize=8,Color=color3(1,:),LineWidth=2);
+
+hold on
+%figure
+loglog(eulerStats.r,abs(eulerStats.Splong{1,3})./(4/5*eulerStats.r)','d-',MarkerSize=8,Color=color3(2,:),LineWidth=2);
+loglog(eulerStats.r,abs(eulerStats.Sau)./2,'d-',MarkerSize=8,Color=color3(3,:),LineWidth=2);
+
+set(gca,FontSize=15)
+legend('$(S_2^{\parallel}/C_k)^{3/2}\cdot r^{-1}$','$|S_3^{\parallel}|\cdot (4/5r)^{-1}$','$|S_{au}|/2$','interpreter','latex',Location='best',FontSize=12)
+title('$\epsilon$','interpreter','latex',FontWeight='bold',FontSize=18)
+ylabel('$\epsilon$','interpreter','latex',FontWeight='bold',FontSize=18)
+xlabel('$r/mm$','interpreter','latex',FontWeight='bold',FontSize=24)
+grid on;axis padded
+
+
+% figname = ['./' fout '/Epsilon'];
+% savefig(figname)
+% saveas(gcf,figname,'png')
+% saveas(gcf,figname,'pdf')
+
+
+
+%% plot Ruu(r) --- the data could be wrong, have to check the code 'twoPointEulerianStats_Mica'
+figure;
+plot(eulerStats.Ruur,eulerStats.Ruu,'-',MarkerSize=8,Color=color3(1,:),LineWidth=1);hold on
+set(gca,FontSize=15)
+% legend('$Ruu(r)$','interpreter','latex',Location='best',FontSize=12)
+title('$Ruu(r)$','interpreter','latex',FontWeight='bold',FontSize=18)
+ylabel('$Ruu(r)$','interpreter','latex',FontWeight='bold',FontSize=18)
+xlabel('$Ruu_r$','interpreter','latex',FontWeight='bold',FontSize=24)
+grid on
+axis padded
+
+
+figname = ['./' fout '/Ruu'];
+savefig(figname)
+saveas(gcf,figname,'png')
+saveas(gcf,figname,'pdf')
+%% plot PSD(k) --- the data could be wrong, have to check the code 'twoPointEulerianStats_Mica'
+figure
+loglog(eulerStats.PSDk,eulerStats.PSD,'-',MarkerSize=8,Color=color3(1,:),LineWidth=1);hold on
+
+set(gca,FontSize=15)
+% legend('$S_2^E(x)$','$S_2^E(y)$','$S_2^E(z)$','interpreter','latex',Location='best',FontSize=12)
+title('$PSD$','interpreter','latex',FontWeight='bold',FontSize=18)
+ylabel('$PSD$','interpreter','latex',FontWeight='bold',FontSize=18)
+xlabel('$k$','interpreter','latex',FontWeight='bold',FontSize=24)
+grid on
+axis padded
+
+figname = ['./' fout '/PSD'];
+savefig(figname)
+saveas(gcf,figname,'png')
+saveas(gcf,figname,'pdf')

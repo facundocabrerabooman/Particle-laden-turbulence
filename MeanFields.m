@@ -1,10 +1,10 @@
 clear;clc;close all
 
 % Set path were functions will be read from
-addpath(genpath('/Users/FC/Documents/GitHub/Particle-laden-turbulence'));
+addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence'));
 
 % Set as current directory the folder with the data
-folderin = '/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/all_concatenated/';
+folderin = '/Users/fcb/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/tracers/aps/meanfields/';
 cd(folderin)
 
 Fs=2990; % Frame rate
@@ -15,7 +15,12 @@ color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,
 color1 = '#476d76';
 %% Load data
 %fname = 'july7a_tracers';
-load('tracklong','tracklong','Ine','Ine_acc');
+%load('tracers_conc.mat','tracklong','Ine','Ine_acc');
+%load('tracers_conc.mat','tracklong');
+load('output_post_processing.mat','tracklong')
+
+Ine=find(arrayfun(@(X)(~isempty(X.Vx)),tracklong)==1);
+Ine_acc=find(arrayfun(@(X)(~isempty(X.Ax)),tracklong)==1);
 
 tracklong = tracklong(Ine);
 %% Get Velocity Fields
@@ -78,7 +83,7 @@ clearvars -except Fs folderout tracklong fname folderin color3 color1
 %% Plot Mean Velocity
 close all, clear all, clc
 
-pathin = '/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/july7a/fields/';
+pathin = '/Users/fcb/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/tracers/aps/meanfields/';
 folderin = [pathin filesep 'outputs' filesep];
 folderout = [pathin filesep 'meanvel_figures' filesep];
 mkdir(folderout)
@@ -91,7 +96,7 @@ stop
 %% Plot RMS Velocity
 close all, clear all, clc
 
-pathin = '/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/july7a/fields/';
+pathin = '/Users/fcb/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/tracers/aps/meanfields/';
 folderin = [pathin filesep 'outputs' filesep];
 folderout = [pathin filesep 'rmsvel_figures' filesep];
 mkdir(folderout)
@@ -103,7 +108,7 @@ plot_fields(folderin, folderout, outputFileName)
 %% Plot Mean Acceleration
 close all, clear all, clc
 
-pathin = '/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/july7a/fields/';
+pathin = '/Users/fcb/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/tracers/aps/meanfields/';
 folderin = [pathin filesep 'outputs' filesep];
 folderout = [pathin filesep 'meanacc_figures' filesep];
 mkdir(folderout)
@@ -115,7 +120,7 @@ plot_fields(folderin, folderout, outputFileName)
 %% Plot RMS Acceleration
 close all, clear all, clc
 
-pathin = '/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/july7a/fields/';
+pathin = '/Users/fcb/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/tracers/aps/meanfields/';
 folderin = [pathin filesep 'outputs' filesep];
 folderout = [pathin filesep 'rmsacc_figures' filesep];
 mkdir(folderout)

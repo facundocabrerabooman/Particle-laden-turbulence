@@ -1,11 +1,11 @@
 clear;clc;close all
 
 % Set path were functions will be read from
-addpath(genpath('/Users/FC/Documents/GitHub/Particle-laden-turbulence'));
+addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence'));
 
 % Set as current directory the folder with the data
-folderin = '/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/all_concatenated/';
-folderout = '/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/earth_all_concatenated/';
+folderin = '/Users/fcb/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/all_concatenated/';
+folderout = '/Users/fcb/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/earth_all_concatenated/';
 cd(folderout)
 
 Fs=2990; % Frame rate
@@ -19,11 +19,11 @@ color1 = '#476d76';
 %%%%%%%%% If want to concatenate data use this
 if 1==pi
 dconc = [];
-load('/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/july7a/july7a_tracers.mat')
+load('/Users/fcb/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/july7a/july7a_tracers.mat')
 dconc = vertcat(dconc,d); 
-load('/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/july7b/july7b_tracers.mat')
+load('/Users/fcb/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/july7b/july7b_tracers.mat')
 dconc = vertcat(dconc,d); 
-load('/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/july7c/july7c_tracers.mat')
+load('/Users/fcb/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/july7c/july7c_tracers.mat')
 dconc = vertcat(dconc,d); 
 
 d=dconc; 
@@ -45,12 +45,12 @@ porder=3;
 flag_conf=1;
 numFrames = 5e6;
 
-[traj,tracks]=track3d_fc_stb(folderout,fname,maxdist,lmin,flag_pred,npriormax,porder,flag_conf, numFrames, Fs);
+[traj,tracks]=track3d_fcb_stb(folderout,fname,maxdist,lmin,flag_pred,npriormax,porder,flag_conf, numFrames, Fs);
 
 
 save('output_post_processing_earth.mat','traj','tracks')
 clearvars -except traj Fs folderin folderout color3 color1
-%% Only keep long tracks -- redundant if using track3d_fc_stb.m
+%% Only keep long tracks -- redundant if using track3d_fcb_stb.m
 L = arrayfun(@(X)(numel(X.x)),traj);
 Ilong = find(L>=10);
 %% Find proper filter width
@@ -130,7 +130,7 @@ save([folderout filesep 'output_post_processing_earth.mat'],'traj_dec','traj_ddt
 
 %% If data was already split
 %load([folderin filesep 'output_post_processing'],'traj_dec','traj_ddt','traj_fullg')
-load('/Users/FC/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/output_post_processing_split.mat')
+load('/Users/fcb/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/output_post_processing_split.mat')
 
 tracklong = traj_fullg;
 Ine=find(arrayfun(@(X)(~isempty(X.Vx)),tracklong)==1);
@@ -428,6 +428,12 @@ savefig_custom([folderout 'corr'],8,6,'fig')
 save('output_post_processing_earth.mat','Ruu','Raa','Ruufit','Raafit','-append')
 %% Eulerian 2-point statistics
 clearvars -except tracklong Ine Fs Ine_acc
+
+load('/Users/fcb/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Data to Shake-the-Box/PostProcessing/earth_all_concatenated/output_post_processing_earth.mat')
+
+Ine=find(arrayfun(@(X)(~isempty(X.Vx)),tracklong)==1);
+Ine_acc=find(arrayfun(@(X)(~isempty(X.Ax)),tracklong)==1);
+
 
 for j=1:numel(tracklong); tracklong(j).Tf = tracklong(j).Tf_acc; end % rename Tf field
 

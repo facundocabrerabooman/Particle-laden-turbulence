@@ -102,7 +102,7 @@ name = 'center vertical plane2DY vertvelcolormap';
 figure;
 
 q=quiver(Y(:,5,:),Z(:,5,:),mYdt(:,5,:),mZdt(:,5,:),'r','LineWidth',2); hold on
-stop
+
 vel = reshape(mZdt(:,5,:),[10,10]);
 Ys = reshape(Y(:,5,:),[10,10]);
 Zs = reshape(Z(:,5,:),[10,10]);
@@ -154,7 +154,7 @@ savefig_FC([folderout name],8,6,'pdf')
 name = 'center vertical plane2DX vertvelcolormap';
 figure;
 
-q=quiver(X(5,:,:),Z(5,:,:),mXdt(5,:,:),mZdt(5,:,:),'r','LineWidth',2); hold on
+%q=quiver(X(5,:,:),Z(5,:,:),mXdt(5,:,:),mZdt(5,:,:),'r','LineWidth',2); hold on
 
 vel = reshape(mZdt(5,:,:),[10,10]);
 Xs = reshape(X(5,:,:),[10,10]);
