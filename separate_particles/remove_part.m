@@ -8,9 +8,8 @@ Imd = imdilate(imbinarize(imopen(Im,st)),stdil);
 %% refine particle image
 Rp=sqrt(numel(find(Imd~=0)))/pi;
 
-Rmin = max(0.8*Rp,5.5);
-%Rmin = max(0.8*Rp,4);
-Rmax = max(1.2*Rp,15);
+Rmin = max(0.6*Rp,4);
+Rmax = max(1.6*Rp,15);
 [C, R] = imfindcircles(Imd, cast([Rmin Rmax],class(Im)));
 if size(C,1) == 1
     roi=images.roi.Circle('Center',C,'Radius',R);
@@ -19,8 +18,9 @@ else
     mask = Imd;
 end
 Imp = immultiply(Im,cast(mask,class(Im)));
-Imp = imgaussfilt(Imp,1);
 Imt = immultiply(Im,cast(abs(1-mask),class(Im)));
+
+Imp = imgaussfilt(Imp,1);
 Imt = imgaussfilt(Imt,1);
 
 
