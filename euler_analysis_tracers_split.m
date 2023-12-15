@@ -84,37 +84,36 @@ trajs_conc_minus_mean_field = find_closest_bin(trajs_conc, X, Y, Z, U, V, W);
 Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc_minus_mean_field)==1);
 
 
-%save('trajs_conc_minus_mean_field','trajs_conc_minus_mean_field','-v7.3')
+save(['/Users/fcb/AuxFiles' filesep 'trajs_conc_minus_mean_field'],'trajs_conc_minus_mean_field','-v7.3')
 %%
 mycolormap = mycolor('#063970','#e28743');%('#063970','#eeeee4','#e28743')
 color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,:)];
 color1 = '#476d76';
 
 %% Eulerian 2-point statistics
-clc
-%for j=1:numel(trajs_conc_minus_mean_field); trajs_conc_minus_mean_field(j).t_sec_abs = trajs_conc_minus_mean_field(j).t_sec_abs; end % rename Tf field
+clearvars -except trajs_conc_minus_mean_field Ine
 
-a = round(numel(trajs_conc_minus_mean_field(Ine))/10);
+Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc_minus_mean_field)==1);
+trajs_conc_minus_mean_field = trajs_conc_minus_mean_field(Ine);
 
-
-%[eulerStats1, pair1] = twoPointsEulerianStats_Mica_Speedup(trajs_conc_minus_mean_field(Ine(1:a)),[0.5 40],40,'off');
-eulerStats1= twoPointsEulerianStats_Mica(trajs_conc_minus_mean_field(Ine(1:a)),[0.5 40],40); % if data in mm
-1
-save('eulerstats1','eulerStats1','-v7.3')
-eulerStats2 = twoPointsEulerianStats_Mica(trajs_conc_minus_mean_field(Ine(a:2*a)),[0.5 40],40,'off');
-2
-save('eulerstats2','eulerStats2','-v7.3')
-eulerStats3 = twoPointsEulerianStats_Mica(trajs_conc_minus_mean_field(Ine(2*a:3*a)),[0.5 40],40,'off');
-3
-save('eulerstats3','eulerStats3','-v7.3')
-eulerStats4 = twoPointsEulerianStats_Mica(trajs_conc_minus_mean_field(Ine(3*a:4*a)),[0.5 40],40,'off');
-4
-save('eulerstats4','eulerStats4','-v7.3')
+a = round(numel(trajs_conc_minus_mean_field)/20);
+mkdir('euler_split')
+for i=8:20 
+    i
+    
+    [eulerStats_tmp,~] = twoPointsEulerianStats_Mica_Speedup(trajs_conc_minus_mean_field((i-1)*a+1:(a*i)),[0.5 40],30,'off');
+    
+    % Append loop index `i` to the variable name
+    eval(sprintf('eulerStats_tmp_%d = eulerStats_tmp;', i));
+    
+    % Generate dynamic filename based on loop index `i`
+    filename = sprintf('eulerstats1_%d.mat', i);
+    
+    % Save the output with the dynamic filename
+    save(['euler_split' filesep filename], sprintf('eulerStats_tmp_%d', i), '-v7.3');
+end
 
 %% compute ensemble average:
-
-% Assuming you have four structures: eulerStats1, eulerStats2, eulerStats3, and eulerStats4
-
 % Initialize the new structure
 averageStats = struct();
 
@@ -128,45 +127,66 @@ fieldsToAverage = {'Vmoy', 'VmoyX', 'VmoyY', 'VmoyZ', 'Vstd', 'VstdX', 'VstdY', 
 for fieldIdx = 1:numel(fieldsToAverage)
     field = fieldsToAverage{fieldIdx};
     
-    % Handle special case for cell arrays
-    if iscell(eulerStats1.(field))
-        cellLength = numel(eulerStats1.(field));
+    % Initialize cell array for averaging cell fields
+    if iscell(eulerStats_tmp_1.(field))
+        cellLength = numel(eulerStats_tmp_1.(field));
         averageCell = cell(1, cellLength);
         
+        % Initialize each cell element with the correct size
         for cellIdx = 1:cellLength
-            values1 = eulerStats1.(field){cellIdx};
-            values2 = eulerStats2.(field){cellIdx};
-            values3 = eulerStats3.(field){cellIdx};
-            values4 = eulerStats4.(field){cellIdx};
+            averageCell{cellIdx} = zeros(size(eulerStats_tmp_1.(field){cellIdx}));
+        end
+    end
+    
+    % Initialize the averageStats field if it's a non-cell field
+    if ~iscell(eulerStats_tmp_1.(field))
+        averageStats.(field) = zeros(size(eulerStats_tmp_1.(field)));
+    end
+    
+    for structIdx = 1:20
+        currentStruct = eval(sprintf('eulerStats_tmp_%d', structIdx));
+        
+        % Handle special case for cell arrays
+        if iscell(eulerStats_tmp_1.(field))
+            for cellIdx = 1:cellLength
+                values1 = eulerStats_tmp_1.(field){cellIdx};
+                valuesCurrent = currentStruct.(field){cellIdx};
+                
+                % Check if sizes are the same before averaging
+                if isequal(size(values1), size(valuesCurrent))
+                    % Compute the average for each cell member
+                    averageCell{cellIdx} = averageCell{cellIdx} + valuesCurrent;
+                else
+                    % Handle the case where sizes are not the same
+                    fprintf('Sizes of %s are not the same in structure %d. Skipping this field.\n', field, structIdx);
+                end
+            end
+        else
+            % Extract the field values from the current structure
+            values1 = eulerStats_tmp_1.(field);
+            valuesCurrent = currentStruct.(field);
             
             % Check if sizes are the same before averaging
-            if isequal(size(values1), size(values2), size(values3), size(values4))
-                % Compute the average for each cell member
-                averageCell{cellIdx} = (values1 + values2 + values3 + values4) / 4;
+            if isequal(size(values1), size(valuesCurrent))
+                % Compute the average for non-cell fields
+                averageStats.(field) = averageStats.(field) + valuesCurrent;
             else
                 % Handle the case where sizes are not the same
-                fprintf('Sizes of %s are not the same. Skipping this field.\n', field);
-                averageCell{cellIdx} = [];  % Placeholder for the skipped field
+                fprintf('Sizes of %s are not the same in structure %d. Skipping this field.\n', field, structIdx);
             end
         end
-        
+    end
+    
+    % Divide by the number of structures to get the average
+    if iscell(eulerStats_tmp_1.(field))
+        for cellIdx = 1:cellLength
+            averageCell{cellIdx} = averageCell{cellIdx} / 20;
+        end
         % Assign the averaged cell to the new structure
         averageStats.(field) = averageCell;
     else
-        % Extract the field values from all four structures
-        values1 = eulerStats1.(field);
-        values2 = eulerStats2.(field);
-        values3 = eulerStats3.(field);
-        values4 = eulerStats4.(field);
-        
-        % Check if sizes are the same before averaging
-        if isequal(size(values1), size(values2), size(values3), size(values4))
-            % Compute the average for non-cell fields
-            averageStats.(field) = (values1 + values2 + values3 + values4) / 4;
-        else
-            % Handle the case where sizes are not the same
-            fprintf('Sizes of %s are not the same. Skipping this field.\n', field);
-        end
+        % Divide by the number of structures to get the average
+        averageStats.(field) = averageStats.(field) / 20;
     end
 end
 
@@ -174,10 +194,12 @@ end
 disp('Average Structure:');
 disp(averageStats);
 
+
+
 eulerStats = averageStats; clear averageStats
 
 %eulerStats = eulerStats1;
-save('average_eulerStats.mat','eulerStats','pair')
+%save('average_eulerStats.mat','eulerStats','pair')
 
 %% Plot
 figure;

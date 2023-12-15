@@ -5,9 +5,9 @@ cam = 3;
 for frame=1:7
 
 %%%%%%%%%
-pathcalib = ['/Users/fcb/AuxFiles/calib_12-12-23/Camera' num2str(cam) filesep num2str(frame)];
+pathcalib = ['/Users/fcb/AuxFiles/calib_12-13-23/Camera' num2str(cam) filesep num2str(frame)];
 
-pathout = '/Users/fcb/AuxFiles/calib_12-12-23//';
+pathout = '/Users/fcb/AuxFiles/calib_12-13-23//';
 
 fname = ['cam' num2str(cam) '_frame_preproc_00000' num2str(frame)];
 

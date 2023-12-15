@@ -4,8 +4,10 @@ clear;clc;close all
 addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence'));
 
 fname = 'all_conc';
+fname_tracers = 'trajs_TrCer_1000_13_fullg_tracers';
 
 folderin = '/Volumes/landau1/TrCer_1000/fullg';
+folderin_tracers = '/Volumes/landau1/Tracers/dat/';
 folderout = folderin;
 cd(folderin)
 
@@ -14,45 +16,120 @@ Fs=2990; % Frame rate
 %% Concatenate data
 
 if pi==pi
-    trajs_conc = [];
+    trajs_conc_inertial = [];
     
     load('trajs_TrCer_1000_13_fullg_inertial.mat')
-    trajs_conc = [trajs_conc tracklong];
+    trajs_conc_inertial = [trajs_conc_inertial tracklong];
     
     %load('trajs_TrCer_1000_14_fullg_inertial.mat')
     %trajs_conc = [trajs_conc tracklong];
 
-    Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc)==1);
+    Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc_inertial)==1);
 end
 clear tracklong 
-save('traj_conc_inertial_fullg','trajs_conc','Ine','-v7.3')
+Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc_inertial)==1);
+trajs_conc_inertial = trajs_conc_inertial(Ine);
+save('traj_conc_inertial_fullg','trajs_conc_inertial','Ine','-v7.3')
+
+%%
+mycolormap = mycolor('#063970','#e28743');%('#063970','#eeeee4','#e28743')
+color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,:)];
+color1 = '#476d76';
 
 %% Slip Velocity
 
+load([folderin_tracers filesep fname_tracers '.mat'])
+trajs_conc_tracers = tracklong; clear tracklong
+Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc_tracers)==1);
+trajs_conc_tracers = trajs_conc_tracers(Ine);
+%%
+% Assuming you have two structures: trajs_conc_inertial and trajs_conc_tracers
+close all, clc
+% Parameters for the sphere
+sphereRadius = 10;
 
-for j=1:numel(trajs_conc) % loop over trajs
-    traj_tmp = trajs_conc(j);
+% Set up VideoWriter
+videoFile = 'trajectory_video.mp4';  % Specify the desired file name
+writerObj = VideoWriter(videoFile, 'MPEG-4');
+writerObj.FrameRate = 5;  % Set the frame rate (adjust as needed)
+open(writerObj);
+
+
+% Loop over each element in trajs_conc_inertial
+for inertialIdx = 1:length(trajs_conc_inertial)
+    % Extract inertial particle information
+    Xf = trajs_conc_inertial(inertialIdx).Xf;
+    Zf = trajs_conc_inertial(inertialIdx).Yf;
+    Yf = trajs_conc_inertial(inertialIdx).Zf;
+    Tf = trajs_conc_inertial(inertialIdx).Tf;
     
-    if isempty(traj_tmp.Vx)
-        break
-    end
-
-    for t=1:size(traj_tmp.Vx) % loop over time
-
-    asd
     
+    for timeIdx = 1:5:numel(Tf) % loop over time
+        time_inertial = Tf(timeIdx);
+        
+        % Plot inertial particle
+        % Create a figure for the 3D plot
+        f = figure(10); hold on 
+        f.Visible = 'off'; 
+        %f=figure;hold on
+        plot3(Xf(timeIdx), Yf(timeIdx), Zf(timeIdx), 'o', 'MarkerSize', 10,'MarkerFaceColor',color1); 
+        box on
+        hold on;
+
+        % Loop over each element in trajs_conc_tracers
+        for tracerIdx = 1:length(trajs_conc_tracers)
+            disp([sprintf('%.1f', inertialIdx/length(trajs_conc_inertial)*100) '--' sprintf('%.1f',tracerIdx/length(trajs_conc_tracers))])
+            % Extract tracer particle information
+            Xf_tracer = trajs_conc_tracers(tracerIdx).Xf;
+            Zf_tracer = trajs_conc_tracers(tracerIdx).Yf;
+            Yf_tracer = trajs_conc_tracers(tracerIdx).Zf;
+            Tf_tracer = trajs_conc_tracers(tracerIdx).Tf;
+
+            time_match=find(time_inertial == Tf_tracer);
+            if ~isempty(time_match)
+                % Check if the tracer particle is within the sphere for each point
+                distance = sqrt((Xf(timeIdx) - Xf_tracer(time_match)).^2 + (Yf(timeIdx) - Yf_tracer(time_match)).^2 + (Zf(timeIdx) - Zf_tracer(time_match)).^2);
+        
+                flag_inside = find(distance <= sphereRadius);
+                % Plot tracer particle if within the sphere
+                if ~isempty(flag_inside)
+                      % Loop over different view angles to create rotation effect
+                    plot3(Xf_tracer(time_match), Yf_tracer(time_match), Zf_tracer(time_match), 'o', 'MarkerSize', 5,'MarkerFaceColor',mycolormap((size(mycolormap,1)+1)/2,:));hold on
+                else 
+                    plot3(Xf_tracer(time_match), Yf_tracer(time_match), Zf_tracer(time_match), 'ko', 'MarkerSize', 1,'MarkerFaceColor','k');hold on
+                end
+            end  
+        end
+
+        % Plot the transparent sphere
+        % [x, y, z] = sphere;
+        % h = surf( sphereRadius * x + Xf(timeIdx), sphereRadius * y + Yf(timeIdx), sphereRadius * z + Zf(timeIdx));
+        % alpha(h, 0.1);  % Set transparency (0 is completely transparent, 1 is opaque)
+
+        view(-45, 10); % Set the view angle
+            % Set axis limits and labels
+        axis equal;
+        xlim([-20,20]);
+        zlim([-45,35]);
+        ylim([-20,20]);
+        xlabel('X-axis');
+        ylabel('Y-axis');
+        zlabel('Z-axis');
+        title(['Time: ' num2str(time_inertial)]);
+        writeVideo(writerObj, getframe(gcf));
+
+    % Close the figure
+    pause(1)
+    close(gcf);
+
     end
+    pause(1)
 
 end
 
 
-
-%trajs_conc_minus_mean_field = find_closest_bin(trajs_conc, X, Y, Z, U, V, W);
-
-%save('trajs_conc_minus_mean_field','trajs_conc_minus_mean_field','-v7.3')
-
-
-
+% Close the video file
+close(writerObj);
 
 
 %%
@@ -61,13 +138,13 @@ color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,
 color1 = '#476d76';
 %% 1 time - 1 particle statistics
 %% Calculate & plot velocity and acceleration pdfs
-pdfV(1) = mkpdf5(trajs_conc(Ine),'Vx',256,10);
-pdfV(2) = mkpdf5(trajs_conc(Ine),'Vy',256,10);
-pdfV(3) = mkpdf5(trajs_conc(Ine),'Vz',256,10);
+pdfV(1) = mkpdf5(trajs_conc_inertial(Ine),'Vx',256,10);
+pdfV(2) = mkpdf5(trajs_conc_inertial(Ine),'Vy',256,10);
+pdfV(3) = mkpdf5(trajs_conc_inertial(Ine),'Vz',256,10);
 
-pdfA(1) = mkpdf5(trajs_conc(Ine),'Ax',256,20);
-pdfA(2) = mkpdf5(trajs_conc(Ine),'Ay',256,20);
-pdfA(3) = mkpdf5(trajs_conc(Ine),'Az',256,20);
+pdfA(1) = mkpdf5(trajs_conc_inertial(Ine),'Ax',256,20);
+pdfA(2) = mkpdf5(trajs_conc_inertial(Ine),'Ay',256,20);
+pdfA(3) = mkpdf5(trajs_conc_inertial(Ine),'Az',256,20);
 
 save('output_post_processing.mat','pdfV','pdfA')
 %% Plot Normalized PDFs
@@ -194,9 +271,9 @@ maketable(pdfA,pdfV,folderout)
 %% 2 times - 1 particle statistics (Lagrangian statistics)
 
 %% Mean Square Separation
-MSD(1) = structFunc_struct(trajs_conc(Ine),'Xf',2);
-MSD(2) = structFunc_struct(trajs_conc(Ine),'Yf',2);
-MSD(3) = structFunc_struct(trajs_conc(Ine),'Zf',2);
+MSD(1) = structFunc_struct(trajs_conc_inertial(Ine),'Xf',2);
+MSD(2) = structFunc_struct(trajs_conc_inertial(Ine),'Yf',2);
+MSD(3) = structFunc_struct(trajs_conc_inertial(Ine),'Zf',2);
 
 save('output_post_processing.mat','MSD','-append')
 %%
@@ -224,9 +301,9 @@ savefig_custom([folderout 'MSS'],8,6,'pdf')
 savefig_custom([folderout 'MSS'],8,6,'fig')
 %% Longitudinal S2
 
-S2L(1)= structFunc_struct(trajs_conc(Ine),'Vx',2);
-S2L(2)= structFunc_struct(trajs_conc(Ine),'Vy',2);
-S2L(3)= structFunc_struct(trajs_conc(Ine),'Vz',2);
+S2L(1)= structFunc_struct(trajs_conc_inertial(Ine),'Vx',2);
+S2L(2)= structFunc_struct(trajs_conc_inertial(Ine),'Vy',2);
+S2L(3)= structFunc_struct(trajs_conc_inertial(Ine),'Vz',2);
 
 save('output_post_processing.mat','S2L','-append')
 %%
@@ -362,7 +439,7 @@ end
 %for j=1:numel(trajs_conc); trajs_conc(j).Tf = trajs_conc(j).t_sec_abs; end % rename Tf field
 
 tic  
-[eulerStats, pair] = twoPointsEulerianStats_Mica_Speedup(trajs_conc(Ine),[0.5 40],40,'off');
+[eulerStats, pair] = twoPointsEulerianStats_Mica_Speedup(trajs_conc_inertial(Ine),[0.5 40],40,'off');
 toc
 save('output_post_processing.mat','eulerStats','pair','-append')
 

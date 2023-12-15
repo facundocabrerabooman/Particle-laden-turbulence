@@ -1,1 +1,0 @@
-In the drop tower we need to split data to obtain purely micro-g data and full-g data.

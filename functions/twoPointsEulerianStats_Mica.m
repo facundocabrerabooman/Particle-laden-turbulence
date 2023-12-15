@@ -27,7 +27,7 @@ dRmin = dRminmax(1);
 dRmax = dRminmax(2);
 
 %%
- w=4;
+ w=10;
  L=3*w;
 % kerp = posfiltcoef(w,L);
 % kerv = velfiltcoef(w,L);
