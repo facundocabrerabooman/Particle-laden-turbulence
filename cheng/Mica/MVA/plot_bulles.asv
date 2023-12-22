@@ -1,0 +1,11 @@
+function [bulles]=plot_bulles(vel,i1,N)
+
+data=[];
+xt=vel.length(i1)/2;
+for j=i1:i1+N
+        data=[data abs(vel.data(j).seg)'.^2];
+        text(xt,);
+        xt=xt+vel.length(j)/2+vel.length(j+1)/2
+
+end
+plot(data);
