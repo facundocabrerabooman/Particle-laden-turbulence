@@ -1,0 +1,33 @@
+function [fdata,FDoppler,WDoppler]=filter_doppler(data,Fsamp)
+
+%[fdata,sp,FDoppler,WDoppler]=filter_doppler(data,Fsamp);
+
+st=fft(data);
+st(length(data)/2+1:length(data))=0;
+data=ifft(st);
+%[sp,f]=spectrum(real(data),4096,1024,hanning(4096),Fsamp);
+[sp,f]=pwelch(real(data),hanning(4096),1024,4096,Fsamp);
+[B,A]=butter(4,0.25,'low');
+%sp=filtfilt(B,A,sp);
+sp=medfilt1(sp,10);
+ %figure;semilogy(f,sp(:,1));
+%return;
+pk=1;
+n=1;
+while(pk<10)
+    [m,pk]=max(sp(n:length(sp(:,1)),1));
+    n=n+1;
+end
+
+pk=pk+n-1;
+
+[m,im]=min(sp(1:pk,1));
+width=2*(pk-im);
+
+FDoppler=f(pk);
+WDoppler=width*Fsamp/4096;
+
+
+[B,A]=butter(4,[FDoppler-WDoppler/2 FDoppler+WDoppler/2]*2/Fsamp,'bandpass');
+%[B,A]=cheby1(2,0.5,[FDoppler-WDoppler/2 FDoppler+WDoppler/2]*2/Fsamp);
+fdata=filtfilt(B,A,data);

@@ -11,40 +11,23 @@ cd(folderin)
 
 Fs=2990; % Frame rate
 
-mycolormap = mycolor('#063970','#e28743');%('#063970','#eeeee4','#e28743')
-color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,:)];
-color1 = '#476d76';
-
 %% Concatenate data
 
 if pi==pi
     trajs_conc = [];
     
-    load('trajs_TrCer_1000_11_ddt_tracers.mat','tracklong')
+    load('trajs_TrCer_1000_11_ddt_tracers.mat')
     trajs_conc = [trajs_conc tracklong];
-    clear tracklong
     1
-    load('trajs_TrCer_1000_13_ddt_tracers.mat','tracklong')
+    load('trajs_TrCer_1000_13_ddt_tracers.mat')
     trajs_conc = [trajs_conc tracklong];
-    clear tracklong
     2
-    load('trajs_TrCer_1000_14_ddt_tracers.mat','tracklong')
+    load('trajs_TrCer_1000_14_ddt_tracers.mat')
     trajs_conc = [trajs_conc tracklong];
-    clear tracklong
     3
-    load('trajs_TrCer_1000_15_ddt_tracers.mat','tracklong')
+    load('trajs_TrCer_1000_15_ddt_tracers.mat')
     trajs_conc = [trajs_conc tracklong];
-    clear tracklong
     4
-    load('trajsf1_TrCer_1000_32_ddt_tracers.mat','tracklong1')
-    trajs_conc = [trajs_conc tracklong1];
-    clear tracklong
-    5
-    load('trajsf2_TrCer_1000_32_ddt_tracers.mat','tracklong2')
-    trajs_conc = [trajs_conc tracklong2];
-    clear tracklong
-    6
-    
 
     
     % load('trajs_TrCer_1000_noturb.mat')
@@ -77,62 +60,48 @@ clear tracklong traj_ddt
 %save('traj_conc_tracers_ddt','trajs_conc','Ine','-v7.3')
 
 %% Get Mean Velocity 
-if pi==1
-    for i=1:numel(trajs_conc)
-        trajs_conc(i).X = trajs_conc(i).x;
-        trajs_conc(i).Y = trajs_conc(i).y;
-        trajs_conc(i).Z = trajs_conc(i).z;
-    end
-    
-    [U, mBdt, bins] = track2meanDxDt3DProfile(trajs_conc,'Xf',2:2:50,[20 20 20],1,1,'x','cart');
-    [V, ~, ~] = track2meanDxDt3DProfile(trajs_conc,'Yf',2:2:50,[20 20 20],1,1,'y','cart');
-    [W, ~, ~] = track2meanDxDt3DProfile(trajs_conc,'Zf',2:2:50,[20 20 20],1,1,'z','cart');
-    
-    [X,Y,Z]=meshgrid(bins{1},bins{2},bins{3});
-    
-    U=U.*Fs;
-    V=V.*Fs;
-    W=W.*Fs;
-    
-    %save('output_Vel_meanfields','U','V','W','mBdt','bins','X','Y','Z')
-    
-    
-    trajs_conc_minus_mean_field = find_closest_bin(trajs_conc, X, Y, Z, U, V, W);
-    Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc_minus_mean_field)==1);
-    
-    stop
-    save([folderin filesep 'trajs_conc_minus_mean_field'],'trajs_conc_minus_mean_field','-v7.3')
-end
-%% Get rid of mean value instead of overall mean velocity
-%%% this way the mean would be zero
-if pi==1
 
-    trajs_conc_minus_mean_field_meanf = trajs_conc_minus_mean_field ;
-    trajs_conc_minus_mean_field = trajs_conc;
-    
-    for o = 1:numel(trajs_conc_minus_mean_field)
-        trajs_conc_minus_mean_field(o).Vx = trajs_conc_minus_mean_field(o).Vx - mean(trajs_conc_minus_mean_field(o).Vx);
-        trajs_conc_minus_mean_field(o).Vy = trajs_conc_minus_mean_field(o).Vy - mean(trajs_conc_minus_mean_field(o).Vy);
-        trajs_conc_minus_mean_field(o).Vz = trajs_conc_minus_mean_field(o).Vz - mean(trajs_conc_minus_mean_field(o).Vz);
-    end
-
+for i=1:numel(trajs_conc)
+    trajs_conc(i).X = trajs_conc(i).x;
+    trajs_conc(i).Y = trajs_conc(i).y;
+    trajs_conc(i).Z = trajs_conc(i).z;
 end
 
+[U, mBdt, bins] = track2meanDxDt3DProfile(trajs_conc,'Xf',2:2:50,[20 20 20],1,1,'x','cart');
+[V, ~, ~] = track2meanDxDt3DProfile(trajs_conc,'Yf',2:2:50,[20 20 20],1,1,'y','cart');
+[W, ~, ~] = track2meanDxDt3DProfile(trajs_conc,'Zf',2:2:50,[20 20 20],1,1,'z','cart');
+
+[X,Y,Z]=meshgrid(bins{1},bins{2},bins{3});
+
+U=U.*Fs;
+V=V.*Fs;
+W=W.*Fs;
+
+%save('output_Vel_meanfields','U','V','W','mBdt','bins','X','Y','Z')
+
+
+trajs_conc_minus_mean_field = find_closest_bin(trajs_conc, X, Y, Z, U, V, W);
+Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc_minus_mean_field)==1);
+
+
+save(['/Users/fcb/AuxFiles' filesep 'trajs_conc_minus_mean_field'],'trajs_conc_minus_mean_field','-v7.3')
+%%
+mycolormap = mycolor('#063970','#e28743');%('#063970','#eeeee4','#e28743')
+color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,:)];
+color1 = '#476d76';
 
 %% Eulerian 2-point statistics
-clearvars -except trajs_conc Ine color3 color1
+clearvars -except trajs_conc_minus_mean_field Ine
 
-Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc)==1);
-trajs_conc = trajs_conc(Ine);
+Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc_minus_mean_field)==1);
+trajs_conc_minus_mean_field = trajs_conc_minus_mean_field(Ine);
 
-a = round(numel(trajs_conc)/30);
-nstats = 28;
-
+a = round(numel(trajs_conc_minus_mean_field)/20);
 mkdir('euler_split')
-for i=12:30
+for i=8:20 
     i
-    try
-    [eulerStats_tmp,~] = twoPointsEulerianStats_Mica_Speedup(trajs_conc((i-1)*a+1:(a*i)),[0.5 40],30,'off');
+    
+    [eulerStats_tmp,~] = twoPointsEulerianStats_Mica_Speedup(trajs_conc_minus_mean_field((i-1)*a+1:(a*i)),[0.5 40],30,'off');
     
     % Append loop index `i` to the variable name
     eval(sprintf('eulerStats_tmp_%d = eulerStats_tmp;', i));
@@ -142,8 +111,6 @@ for i=12:30
     
     % Save the output with the dynamic filename
     save(['euler_split' filesep filename], sprintf('eulerStats_tmp_%d', i), '-v7.3');
-    catch 
-    end
 end
 
 %% compute ensemble average:
@@ -176,8 +143,7 @@ for fieldIdx = 1:numel(fieldsToAverage)
         averageStats.(field) = zeros(size(eulerStats_tmp_1.(field)));
     end
     
-    for structIdx = [1 11 13:26 28:30] 
-        %ATTENTION HERE
+    for structIdx = 1:20
         currentStruct = eval(sprintf('eulerStats_tmp_%d', structIdx));
         
         % Handle special case for cell arrays
@@ -214,13 +180,13 @@ for fieldIdx = 1:numel(fieldsToAverage)
     % Divide by the number of structures to get the average
     if iscell(eulerStats_tmp_1.(field))
         for cellIdx = 1:cellLength
-            averageCell{cellIdx} = averageCell{cellIdx} / nstats;
+            averageCell{cellIdx} = averageCell{cellIdx} / 20;
         end
         % Assign the averaged cell to the new structure
         averageStats.(field) = averageCell;
     else
         % Divide by the number of structures to get the average
-        averageStats.(field) = averageStats.(field) / nstats;
+        averageStats.(field) = averageStats.(field) / 20;
     end
 end
 
@@ -233,7 +199,7 @@ disp(averageStats);
 eulerStats = averageStats; clear averageStats
 
 %eulerStats = eulerStats1;
-save([folderin filesep 'average_eulerStats_removing_mean.mat'],'eulerStats')
+%save('average_eulerStats.mat','eulerStats','pair')
 
 %% Plot
 figure;

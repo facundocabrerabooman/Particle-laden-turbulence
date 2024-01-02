@@ -1,0 +1,44 @@
+function [incr]=increments_velocities(vel_in,dt,n,w)
+
+%[incr]=increments_velocities(vel_in,dt,n,w)
+
+%c=340;
+%fact=c/2/nu0/sin(theta/2)*32768;
+
+inc.dt=dt;
+
+for kk=1:numel(dt)
+    kk
+    ig=0;
+    for jj=1:numel(vel_in.good)
+        if(length(vel_in.data(vel_in.good(jj)).velf)-dt(kk)>1)
+            ig=ig+1;
+            ind=1:length(vel_in.data(vel_in.good(jj)).velf)-dt(kk);
+            data(ig).x=vel_in.data(vel_in.good(jj)).velf(ind+dt(kk))-vel_in.data(vel_in.good(jj)).velf(ind);
+            data(ig).l=numel(ind);
+            %inc=[inc vel_in.data(vel_in.good(jj)).velf(ind+dt(kk))-vel_in.data(vel_in.good(jj)).velf(ind)];
+        end
+    end
+    
+    MM=max(data-mean(data));
+    mm=min(data-mean(data));
+    
+    n=(MM-mm)/std(data);
+    
+    pdf=mkpdf4(data,n,w);
+    %[incr(kk).xpdf,incr(kk).pdf]=mkpdf3(inc,65,-5,5);
+    %stat=stat_velocities2(vel_in,65);
+    incr.pdf(kk).xpdf=pdf.xpdf;
+    incr.pdf(kk).pdf=pdf.pdf;
+    incr.pdf(kk).xpdfn=pdf.xpdfn;
+    incr.pdf(kk).pdfn=pdf.pdfn;
+    incr.N(kk)=pdf.N;
+    incr.mean(kk)=pdf.mean;
+    incr.std(kk)=pdf.std;
+    incr.flatness(kk)=pdf.flatness;
+    incr.skewness(kk)=pdf.skewness;
+    clear data;
+    %eval(['vel_out.inc_' num2str(dt(kk)) '.x=x;']);
+    %eval(['vel_out.inc_' num2str(dt(kk)) '.pdf=pdf;']);
+end
+

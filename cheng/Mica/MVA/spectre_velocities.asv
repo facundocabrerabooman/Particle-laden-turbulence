@@ -1,0 +1,21 @@
+function [sp,f]=spectre_velocities(vel,varargin)
+
+vel.lmin=1024;
+
+if nargin>1
+    Fs=varargin{1};
+else
+    Fs=1;
+end
+
+sp=zeros(vel.lmin/2+1,1);
+ind=find(vel.length(vel.good)>vel.lmin);
+%ind=find(vel.length>vel.lmin);
+%for j=1:length(vel.good)
+ for j=1:numel(ind)
+    %[p,f]=spectrum(vel.data(vel.good(ind(j))).freq,vel.lmin,vel.lmin/4,hanning(vel.lmin),Fs);
+    [p,f]=pwelch(vel.data(vel.good(ind(j))).freq,hanning(vel.lmin),vel.lmin/4,vel.lmin,Fs);
+    %[p,f]=spectrum(vel.data(ind(j)).freq,vel.lmin,vel.lmin/4,blackman(vel.lmin),Fs);
+    sp=sp+p(:,1);
+end
+sp=sp/length(ind);
