@@ -210,7 +210,7 @@ end
 
 disp([num2str(kt) ' trajectories longer than ' num2str(lmin) ' frames (from ' num2str(length(vertcat(traj.x))) ' matches)']);
 disp(['Saving to .mat file in ' folderout]);
-save([folderout filesep 'trajs_' fname '.mat'],'traj','tracks');
+save([folderout filesep 'trajs_' fname '.mat'],'traj','tracks','-v7.3');
 save([folderout filesep 'param_trajs_' fname '.mat'],'maxdist','lmin','flag_pred','npriormax','porder','flag_conf')
 disp('Tracking complete!');
 elapsed=toc;

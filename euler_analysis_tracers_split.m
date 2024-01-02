@@ -11,23 +11,40 @@ cd(folderin)
 
 Fs=2990; % Frame rate
 
+mycolormap = mycolor('#063970','#e28743');%('#063970','#eeeee4','#e28743')
+color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,:)];
+color1 = '#476d76';
+
 %% Concatenate data
 
 if pi==pi
     trajs_conc = [];
     
-    load('trajs_TrCer_1000_11_ddt_tracers.mat')
+    load('trajs_TrCer_1000_11_ddt_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
+    clear tracklong
     1
-    load('trajs_TrCer_1000_13_ddt_tracers.mat')
+    load('trajs_TrCer_1000_13_ddt_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
+    clear tracklong
     2
-    load('trajs_TrCer_1000_14_ddt_tracers.mat')
+    load('trajs_TrCer_1000_14_ddt_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
+    clear tracklong
     3
-    load('trajs_TrCer_1000_15_ddt_tracers.mat')
+    load('trajs_TrCer_1000_15_ddt_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
+    clear tracklong
     4
+    load('trajsf1_TrCer_1000_32_ddt_tracers.mat','tracklong1')
+    trajs_conc = [trajs_conc tracklong1];
+    clear tracklong
+    5
+    load('trajsf2_TrCer_1000_32_ddt_tracers.mat','tracklong2')
+    trajs_conc = [trajs_conc tracklong2];
+    clear tracklong
+    6
+    
 
     
     % load('trajs_TrCer_1000_noturb.mat')
@@ -60,61 +77,76 @@ clear tracklong traj_ddt
 %save('traj_conc_tracers_ddt','trajs_conc','Ine','-v7.3')
 
 %% Get Mean Velocity 
+if pi==1
+    for i=1:numel(trajs_conc)
+        trajs_conc(i).X = trajs_conc(i).x;
+        trajs_conc(i).Y = trajs_conc(i).y;
+        trajs_conc(i).Z = trajs_conc(i).z;
+    end
+    
+    [U, mBdt, bins] = track2meanDxDt3DProfile(trajs_conc,'Xf',2:2:50,[20 20 20],1,1,'x','cart');
+    [V, ~, ~] = track2meanDxDt3DProfile(trajs_conc,'Yf',2:2:50,[20 20 20],1,1,'y','cart');
+    [W, ~, ~] = track2meanDxDt3DProfile(trajs_conc,'Zf',2:2:50,[20 20 20],1,1,'z','cart');
+    
+    [X,Y,Z]=meshgrid(bins{1},bins{2},bins{3});
+    
+    U=U.*Fs;
+    V=V.*Fs;
+    W=W.*Fs;
+    
+    %save('output_Vel_meanfields','U','V','W','mBdt','bins','X','Y','Z')
+    
+    
+    trajs_conc_minus_mean_field = find_closest_bin(trajs_conc, X, Y, Z, U, V, W);
+    Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc_minus_mean_field)==1);
+    
+    stop
+    save([folderin filesep 'trajs_conc_minus_mean_field'],'trajs_conc_minus_mean_field','-v7.3')
+end
+%% Get rid of mean value instead of overall mean velocity
+%%% this way the mean would be zero
+if pi==1
 
-for i=1:numel(trajs_conc)
-    trajs_conc(i).X = trajs_conc(i).x;
-    trajs_conc(i).Y = trajs_conc(i).y;
-    trajs_conc(i).Z = trajs_conc(i).z;
+    trajs_conc_minus_mean_field_meanf = trajs_conc_minus_mean_field ;
+    trajs_conc_minus_mean_field = trajs_conc;
+    
+    for o = 1:numel(trajs_conc_minus_mean_field)
+        trajs_conc_minus_mean_field(o).Vx = trajs_conc_minus_mean_field(o).Vx - mean(trajs_conc_minus_mean_field(o).Vx);
+        trajs_conc_minus_mean_field(o).Vy = trajs_conc_minus_mean_field(o).Vy - mean(trajs_conc_minus_mean_field(o).Vy);
+        trajs_conc_minus_mean_field(o).Vz = trajs_conc_minus_mean_field(o).Vz - mean(trajs_conc_minus_mean_field(o).Vz);
+    end
+
 end
 
-[U, mBdt, bins] = track2meanDxDt3DProfile(trajs_conc,'Xf',2:2:50,[20 20 20],1,1,'x','cart');
-[V, ~, ~] = track2meanDxDt3DProfile(trajs_conc,'Yf',2:2:50,[20 20 20],1,1,'y','cart');
-[W, ~, ~] = track2meanDxDt3DProfile(trajs_conc,'Zf',2:2:50,[20 20 20],1,1,'z','cart');
-
-[X,Y,Z]=meshgrid(bins{1},bins{2},bins{3});
-
-U=U.*Fs;
-V=V.*Fs;
-W=W.*Fs;
-
-%save('output_Vel_meanfields','U','V','W','mBdt','bins','X','Y','Z')
-
-
-trajs_conc_minus_mean_field = find_closest_bin(trajs_conc, X, Y, Z, U, V, W);
-Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc_minus_mean_field)==1);
-
-
-%save('trajs_conc_minus_mean_field','trajs_conc_minus_mean_field','-v7.3')
-%%
-mycolormap = mycolor('#063970','#e28743');%('#063970','#eeeee4','#e28743')
-color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,:)];
-color1 = '#476d76';
 
 %% Eulerian 2-point statistics
-clc
-%for j=1:numel(trajs_conc_minus_mean_field); trajs_conc_minus_mean_field(j).t_sec_abs = trajs_conc_minus_mean_field(j).t_sec_abs; end % rename Tf field
+clearvars -except trajs_conc Ine color3 color1
 
-a = round(numel(trajs_conc_minus_mean_field(Ine))/10);
+Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc)==1);
+trajs_conc = trajs_conc(Ine);
 
+a = round(numel(trajs_conc)/30);
+nstats = 28;
 
-%[eulerStats1, pair1] = twoPointsEulerianStats_Mica_Speedup(trajs_conc_minus_mean_field(Ine(1:a)),[0.5 40],40,'off');
-eulerStats1= twoPointsEulerianStats_Mica(trajs_conc_minus_mean_field(Ine(1:a)),[0.5 40],40); % if data in mm
-1
-save('eulerstats1','eulerStats1','-v7.3')
-eulerStats2 = twoPointsEulerianStats_Mica(trajs_conc_minus_mean_field(Ine(a:2*a)),[0.5 40],40,'off');
-2
-save('eulerstats2','eulerStats2','-v7.3')
-eulerStats3 = twoPointsEulerianStats_Mica(trajs_conc_minus_mean_field(Ine(2*a:3*a)),[0.5 40],40,'off');
-3
-save('eulerstats3','eulerStats3','-v7.3')
-eulerStats4 = twoPointsEulerianStats_Mica(trajs_conc_minus_mean_field(Ine(3*a:4*a)),[0.5 40],40,'off');
-4
-save('eulerstats4','eulerStats4','-v7.3')
+mkdir('euler_split')
+for i=12:30
+    i
+    try
+    [eulerStats_tmp,~] = twoPointsEulerianStats_Mica_Speedup(trajs_conc((i-1)*a+1:(a*i)),[0.5 40],30,'off');
+    
+    % Append loop index `i` to the variable name
+    eval(sprintf('eulerStats_tmp_%d = eulerStats_tmp;', i));
+    
+    % Generate dynamic filename based on loop index `i`
+    filename = sprintf('eulerstats1_%d.mat', i);
+    
+    % Save the output with the dynamic filename
+    save(['euler_split' filesep filename], sprintf('eulerStats_tmp_%d', i), '-v7.3');
+    catch 
+    end
+end
 
 %% compute ensemble average:
-
-% Assuming you have four structures: eulerStats1, eulerStats2, eulerStats3, and eulerStats4
-
 % Initialize the new structure
 averageStats = struct();
 
@@ -128,45 +160,67 @@ fieldsToAverage = {'Vmoy', 'VmoyX', 'VmoyY', 'VmoyZ', 'Vstd', 'VstdX', 'VstdY', 
 for fieldIdx = 1:numel(fieldsToAverage)
     field = fieldsToAverage{fieldIdx};
     
-    % Handle special case for cell arrays
-    if iscell(eulerStats1.(field))
-        cellLength = numel(eulerStats1.(field));
+    % Initialize cell array for averaging cell fields
+    if iscell(eulerStats_tmp_1.(field))
+        cellLength = numel(eulerStats_tmp_1.(field));
         averageCell = cell(1, cellLength);
         
+        % Initialize each cell element with the correct size
         for cellIdx = 1:cellLength
-            values1 = eulerStats1.(field){cellIdx};
-            values2 = eulerStats2.(field){cellIdx};
-            values3 = eulerStats3.(field){cellIdx};
-            values4 = eulerStats4.(field){cellIdx};
+            averageCell{cellIdx} = zeros(size(eulerStats_tmp_1.(field){cellIdx}));
+        end
+    end
+    
+    % Initialize the averageStats field if it's a non-cell field
+    if ~iscell(eulerStats_tmp_1.(field))
+        averageStats.(field) = zeros(size(eulerStats_tmp_1.(field)));
+    end
+    
+    for structIdx = [1 11 13:26 28:30] 
+        %ATTENTION HERE
+        currentStruct = eval(sprintf('eulerStats_tmp_%d', structIdx));
+        
+        % Handle special case for cell arrays
+        if iscell(eulerStats_tmp_1.(field))
+            for cellIdx = 1:cellLength
+                values1 = eulerStats_tmp_1.(field){cellIdx};
+                valuesCurrent = currentStruct.(field){cellIdx};
+                
+                % Check if sizes are the same before averaging
+                if isequal(size(values1), size(valuesCurrent))
+                    % Compute the average for each cell member
+                    averageCell{cellIdx} = averageCell{cellIdx} + valuesCurrent;
+                else
+                    % Handle the case where sizes are not the same
+                    fprintf('Sizes of %s are not the same in structure %d. Skipping this field.\n', field, structIdx);
+                end
+            end
+        else
+            % Extract the field values from the current structure
+            values1 = eulerStats_tmp_1.(field);
+            valuesCurrent = currentStruct.(field);
             
             % Check if sizes are the same before averaging
-            if isequal(size(values1), size(values2), size(values3), size(values4))
-                % Compute the average for each cell member
-                averageCell{cellIdx} = (values1 + values2 + values3 + values4) / 4;
+            if isequal(size(values1), size(valuesCurrent))
+                % Compute the average for non-cell fields
+                averageStats.(field) = averageStats.(field) + valuesCurrent;
             else
                 % Handle the case where sizes are not the same
-                fprintf('Sizes of %s are not the same. Skipping this field.\n', field);
-                averageCell{cellIdx} = [];  % Placeholder for the skipped field
+                fprintf('Sizes of %s are not the same in structure %d. Skipping this field.\n', field, structIdx);
             end
         end
-        
+    end
+    
+    % Divide by the number of structures to get the average
+    if iscell(eulerStats_tmp_1.(field))
+        for cellIdx = 1:cellLength
+            averageCell{cellIdx} = averageCell{cellIdx} / nstats;
+        end
         % Assign the averaged cell to the new structure
         averageStats.(field) = averageCell;
     else
-        % Extract the field values from all four structures
-        values1 = eulerStats1.(field);
-        values2 = eulerStats2.(field);
-        values3 = eulerStats3.(field);
-        values4 = eulerStats4.(field);
-        
-        % Check if sizes are the same before averaging
-        if isequal(size(values1), size(values2), size(values3), size(values4))
-            % Compute the average for non-cell fields
-            averageStats.(field) = (values1 + values2 + values3 + values4) / 4;
-        else
-            % Handle the case where sizes are not the same
-            fprintf('Sizes of %s are not the same. Skipping this field.\n', field);
-        end
+        % Divide by the number of structures to get the average
+        averageStats.(field) = averageStats.(field) / nstats;
     end
 end
 
@@ -174,10 +228,12 @@ end
 disp('Average Structure:');
 disp(averageStats);
 
+
+
 eulerStats = averageStats; clear averageStats
 
 %eulerStats = eulerStats1;
-save('average_eulerStats.mat','eulerStats','pair')
+save([folderin filesep 'average_eulerStats_removing_mean.mat'],'eulerStats')
 
 %% Plot
 figure;

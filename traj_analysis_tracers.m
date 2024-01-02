@@ -11,23 +11,38 @@ cd(folderin)
 
 Fs=2990; % Frame rate
 
+mycolormap = mycolor('#063970','#e28743');%('#063970','#eeeee4','#e28743')
+color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,:)];
+color1 = '#476d76';
 %% Concatenate data
 
 if pi==pi
     trajs_conc = [];
     
-    load('trajs_TrCer_1000_11_ddt_tracers.mat')
+    load('trajs_TrCer_1000_11_ddt_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
+    clear tracklong
     1
-    load('trajs_TrCer_1000_13_ddt_tracers.mat')
+    load('trajs_TrCer_1000_13_ddt_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
+    clear tracklong
     2
-    load('trajs_TrCer_1000_14_ddt_tracers.mat')
+    load('trajs_TrCer_1000_14_ddt_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
+    clear tracklong
     3
-    load('trajs_TrCer_1000_15_ddt_tracers.mat')
+    load('trajs_TrCer_1000_15_ddt_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
+    clear tracklong
     4
+    load('trajsf1_TrCer_1000_32_ddt_tracers.mat','tracklong1')
+    trajs_conc = [trajs_conc tracklong1];
+    clear tracklong
+    5
+    load('trajsf2_TrCer_1000_32_ddt_tracers.mat','tracklong2')
+    trajs_conc = [trajs_conc tracklong2];
+    clear tracklong
+    6
 
     
     % load('trajs_TrCer_1000_noturb.mat')
@@ -57,10 +72,10 @@ if pi==pi
     Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc)==1);
 end
 clear tracklong traj_ddt
-save('traj_conc_tracers_ddt','trajs_conc','Ine','-v7.3')
+%save('traj_conc_tracers_ddt','trajs_conc','Ine','-v7.3')
 
 %% Get Mean Velocity 
-
+if 1==pi
 for i=1:numel(trajs_conc)
     trajs_conc(i).X = trajs_conc(i).x;
     trajs_conc(i).Y = trajs_conc(i).y;
@@ -83,10 +98,8 @@ W=W.*Fs;
 trajs_conc_minus_mean_field = find_closest_bin(trajs_conc, X, Y, Z, U, V, W);
 
 %save('trajs_conc_minus_mean_field','trajs_conc_minus_mean_field','-v7.3')
-%%
-mycolormap = mycolor('#063970','#e28743');%('#063970','#eeeee4','#e28743')
-color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,:)];
-color1 = '#476d76';
+
+end
 %% 1 time - 1 particle statistics
 %% Calculate & plot velocity and acceleration pdfs
 pdfV(1) = mkpdf5(trajs_conc(Ine),'Vx',256,10);
@@ -287,19 +300,19 @@ savefig_custom([folderout 'S2L'],8,6,'pdf')
 savefig_custom([folderout 'S2L'],8,6,'fig')
 
 %% Velocity and Acceleration Correlations
-if 1==pi
+if pi==pi
 disp('corr')
 
-Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc_minus_mean_field)==1);
+Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc)==1);
 
 
-Ruu(1) = xcorr_struct(trajs_conc_minus_mean_field(Ine),'Vx',1);
-Ruu(2) = xcorr_struct(trajs_conc_minus_mean_field(Ine),'Vy',1);
-Ruu(3) = xcorr_struct(trajs_conc_minus_mean_field(Ine),'Vz',1);
+Ruu(1) = xcorr_struct(trajs_conc(Ine),'Vx',1);
+Ruu(2) = xcorr_struct(trajs_conc(Ine),'Vy',1);
+Ruu(3) = xcorr_struct(trajs_conc(Ine),'Vz',1);
 
-Raa(1) = xcorr_struct(trajs_conc_minus_mean_field(Ine),'Ax',1);
-Raa(2) = xcorr_struct(trajs_conc_minus_mean_field(Ine),'Ay',1);
-Raa(3) = xcorr_struct(trajs_conc_minus_mean_field(Ine),'Az',1);
+Raa(1) = xcorr_struct(trajs_conc(Ine),'Ax',1);
+Raa(2) = xcorr_struct(trajs_conc(Ine),'Ay',1);
+Raa(3) = xcorr_struct(trajs_conc(Ine),'Az',1);
 
 %%% another option: 
 % n=1;
@@ -384,6 +397,7 @@ savefig_custom([folderout 'corr'],8,6,'fig')
 
 save('output_post_processing.mat','Ruu','Raa','Ruufit','Raafit','-append')
 end
+stop
 %% Eulerian 2-point statistics
 %clearvars -except trajs_conc Ine Ine Fs color1 color3 folderin folderout mycolormap
 

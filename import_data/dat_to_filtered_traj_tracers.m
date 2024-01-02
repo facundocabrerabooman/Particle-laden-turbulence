@@ -3,7 +3,7 @@ clear;clc;close all
 % Set path were functions will be read from
 addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence'));
 
-fname = 'TrCer_1000_13_fullg_tracers';
+fname = 'TrCer_1000_32_ddt_tracers';
 
 %folderin = '/Volumes/landau1/Tracers/ddt_filtered_w10/';
 folderin = '/Volumes/landau1/Tracers/dat/';
@@ -88,6 +88,13 @@ tracklong=calcVelLEM(traj,wopt,lopt,Fs, wopt, lopt);
 
 Ine=find(arrayfun(@(X)(~isempty(X.Vx)),tracklong)==1);
 
-save(['trajs_' fname '.mat'],'Ine','tracklong','-v7.3')
-%save(['/Users/fcb/AuxFiles/trajs_' fname],'Ine','tracklong','-v7.3')
+stop
+if numel(tracklong)>1e5
+    tracklong1=tracklong(1:round(numel(tracklong)/2));
+    tracklong2=tracklong(round(numel(tracklong)/2):numel(tracklong));
+    save(['trajsf1_' fname '.mat'],'Ine','tracklong1','-v7.3')
+    save(['trajsf2_' fname '.mat'],'Ine','tracklong2','-v7.3')
+else
+    save(['trajsf_' fname '.mat'],'Ine','tracklong','-v7.3')
+end
 

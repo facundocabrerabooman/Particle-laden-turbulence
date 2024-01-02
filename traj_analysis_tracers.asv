@@ -5,61 +5,87 @@ addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence'));
 
 fname = 'all_conc';
 
-fname_tracers = 'trajs_TrCer_1000_13_fullg_tracers.mat';
-
-folderin = '/Volumes/landau1/TrCer_1000/fullg';
-folderin_tracers = '/Volumes/landau1/Tracers/dat/';
+folderin = '/Volumes/landau1/Tracers/ddt_filtered_w10';
 folderout = folderin;
 cd(folderin)
 
 Fs=2990; % Frame rate
 
+mycolormap = mycolor('#063970','#e28743');%('#063970','#eeeee4','#e28743')
+color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,:)];
+color1 = '#476d76';
 %% Concatenate data
 
 if pi==pi
     trajs_conc = [];
     
-    load('trajs_TrCer_1000_13_fullg_inertial.mat')
+    load('trajs_TrCer_1000_11_ddt_tracers.mat')
     trajs_conc = [trajs_conc tracklong];
+    1
+    load('trajs_TrCer_1000_13_ddt_tracers.mat')
+    trajs_conc = [trajs_conc tracklong];
+    2
+    load('trajs_TrCer_1000_14_ddt_tracers.mat')
+    trajs_conc = [trajs_conc tracklong];
+    3
+    load('trajs_TrCer_1000_15_ddt_tracers.mat')
+    trajs_conc = [trajs_conc tracklong];
+    4
+
     
-    %load('trajs_TrCer_1000_14_fullg_inertial.mat')
-    %trajs_conc = [trajs_conc tracklong];
+    % load('trajs_TrCer_1000_noturb.mat')
+    % trajs_conc = [trajs_conc tracklong];
+    
+    load('ddt_july3.mat')
+    trajs_conc = [trajs_conc traj_ddt];
+    numel(trajs_conc)
+    3
+    load('ddt_july7a.mat')
+    trajs_conc = [trajs_conc traj_ddt];
+    numel(trajs_conc)
+    4
+    load('ddt_july7b.mat')
+    trajs_conc = [trajs_conc traj_ddt];
+    numel(trajs_conc)
+    5
+    load('ddt_july7c.mat')
+    trajs_conc = [trajs_conc traj_ddt];
+    numel(trajs_conc)
+    6
+    load('ddt_july9b.mat')
+    trajs_conc = [trajs_conc traj_ddt];
+    numel(trajs_conc)
+    7
 
     Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc)==1);
 end
-clear tracklong 
-save('traj_conc_inertial_fullg','trajs_conc','Ine','-v7.3')
+clear tracklong traj_ddt
+save('traj_conc_tracers_ddt','trajs_conc','Ine','-v7.3')
 
-%% Slip Velocity
-load([folderin_tracers fname_tracers])
+%% Get Mean Velocity 
 
-for j=1:numel(trajs_conc) % loop over trajs
-    traj_tmp = trajs_conc(j);
-    
-    if isempty(traj_tmp.Vx)
-        continue
-    end
-
-    for t=1:size(traj_tmp.Vx,1) % loop over time
-
-        pos = [traj_tmp.Xf(t), traj_tmp.Yf(t), traj_tmp.Zf(t)];
-        time = traj_tmp.Tf(t);
-
-
-    end
-
+for i=1:numel(trajs_conc)
+    trajs_conc(i).X = trajs_conc(i).x;
+    trajs_conc(i).Y = trajs_conc(i).y;
+    trajs_conc(i).Z = trajs_conc(i).z;
 end
 
+[U, mBdt, bins] = track2meanDxDt3DProfile(trajs_conc,'Xf',2:2:50,[20 20 20],1,1,'x','cart');
+[V, ~, ~] = track2meanDxDt3DProfile(trajs_conc,'Yf',2:2:50,[20 20 20],1,1,'y','cart');
+[W, ~, ~] = track2meanDxDt3DProfile(trajs_conc,'Zf',2:2:50,[20 20 20],1,1,'z','cart');
+
+[X,Y,Z]=meshgrid(bins{1},bins{2},bins{3});
+
+U=U.*Fs;
+V=V.*Fs;
+W=W.*Fs;
+
+%save('output_Vel_meanfields','U','V','W','mBdt','bins','X','Y','Z')
 
 
-%trajs_conc_minus_mean_field = find_closest_bin(trajs_conc, X, Y, Z, U, V, W);
+trajs_conc_minus_mean_field = find_closest_bin(trajs_conc, X, Y, Z, U, V, W);
 
 %save('trajs_conc_minus_mean_field','trajs_conc_minus_mean_field','-v7.3')
-
-
-
-
-
 %%
 mycolormap = mycolor('#063970','#e28743');%('#063970','#eeeee4','#e28743')
 color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,:)];
