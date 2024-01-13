@@ -113,9 +113,9 @@ Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc_minus_mean_field)==1);
 trajs_conc_minus_mean_field = trajs_conc_minus_mean_field(Ine);
 
 a = round(numel(trajs_conc_minus_mean_field)/40);
-nsplit = 40;
+nsplit = 39;
 mkdir('euler_split')
-for i=4:40
+for i=24:40
     i
     tic
     [eulerStats_tmp,~] = twoPointsEulerianStats_Mica_Speedup(trajs_conc_minus_mean_field((i-1)*a+1:(a*i)),[0.5 40],30,'off');
@@ -132,6 +132,8 @@ for i=4:40
 end
 stop
 %% compute ensemble average:
+disp('have to load all .mats');pause(10)
+
 % Initialize the new structure
 averageStats = struct();
 
@@ -161,7 +163,7 @@ for fieldIdx = 1:numel(fieldsToAverage)
         averageStats.(field) = zeros(size(eulerStats_tmp_1.(field)));
     end
     
-    for structIdx = [1:11 13:26 28:30]
+    for structIdx = [1:22 24:40]
         currentStruct = eval(sprintf('eulerStats_tmp_%d', structIdx));
         
         % Handle special case for cell arrays
@@ -374,19 +376,3 @@ folderout = 'RuuE';
 mkdir(folderout)
 savefig_FC([folderout filesep 'RuuE'],8,6,'pdf')
 savefig_FC([folderout filesep 'RuuE'],8,6,'fig')
-%% plot PSD(k) --- the data could be wrong, have to check the code 'twoPointEulerianStats_Mica'
-figure
-loglog(eulerStats.PSDk,eulerStats.PSD,'-',MarkerSize=8,Color=color3(1,:),LineWidth=1);hold on
-
-set(gca,FontSize=15)
-% legend('$S_2^E(x)$','$S_2^E(y)$','$S_2^E(z)$','interpreter','latex',Location='best',FontSize=12)
-title('$PSD$','interpreter','latex',FontWeight='bold',FontSize=18)
-ylabel('$PSD$','interpreter','latex',FontWeight='bold',FontSize=18)
-xlabel('$k$','interpreter','latex',FontWeight='bold',FontSize=24)
-grid on
-axis padded
-
-figname = ['./' fout '/PSD'];
-savefig(figname)
-saveas(gcf,figname,'png')
-saveas(gcf,figname,'pdf')

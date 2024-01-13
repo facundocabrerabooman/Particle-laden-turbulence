@@ -50,19 +50,19 @@ if pi==pi
     load('trajsf_TrCer_1000_30_ddt_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
     clear tracklong
-    7
-    load('trajsf_TrCer_1000_28_ddt_tracers.mat','tracklong')
-    trajs_conc = [trajs_conc tracklong];
-    clear tracklong
-    7
-    load('trajsf_TrCer_1000_29_ddt_tracers.mat','tracklong')
-    trajs_conc = [trajs_conc tracklong];
-    clear tracklong
-    7
-    load('trajsf_TrCer_1000_27_ddt_tracers.mat','tracklong')
-    trajs_conc = [trajs_conc tracklong];
-    clear tracklong
-    7
+    % 7
+    % load('trajsf_TrCer_1000_28_ddt_tracers.mat','tracklong')
+    % trajs_conc = [trajs_conc tracklong];
+    % clear tracklong
+    % 7
+    % load('trajsf_TrCer_1000_29_ddt_tracers.mat','tracklong')
+    % trajs_conc = [trajs_conc tracklong];
+    % clear tracklong
+    % 7
+    % load('trajsf_TrCer_1000_27_ddt_tracers.mat','tracklong')
+    % trajs_conc = [trajs_conc tracklong];
+    % clear tracklong
+    % 7
 
     
     % load('trajs_TrCer_1000_noturb.mat')
@@ -134,20 +134,20 @@ end
 %% 1 time - 1 particle statistics
 if pi==pi
 %% Calculate & plot velocity and acceleration pdfs
-pdfV(1) = mkpdf5(trajs_conc(Ine),'Vx',256,10);
+pdfV(1) = mkpdf5(trajs_conc,'Vx',256,10);
 1
-pdfV(2) = mkpdf5(trajs_conc(Ine),'Vy',256,10);
+pdfV(2) = mkpdf5(trajs_conc,'Vy',256,10);
 2
-pdfV(3) = mkpdf5(trajs_conc(Ine),'Vz',256,10);
+pdfV(3) = mkpdf5(trajs_conc,'Vz',256,10);
 3
 
-pdfA(1) = mkpdf5(trajs_conc(Ine),'Ax',256,20);
+pdfA(1) = mkpdf5(trajs_conc,'Ax',256,20);
 4
-pdfA(2) = mkpdf5(trajs_conc(Ine),'Ay',256,20);
+pdfA(2) = mkpdf5(trajs_conc,'Ay',256,20);
 5
-pdfA(3) = mkpdf5(trajs_conc(Ine),'Az',256,20);
+pdfA(3) = mkpdf5(trajs_conc,'Az',256,20);
 6
-
+stop
 try
 save('output_post_processing.mat','pdfV','pdfA')
 catch end

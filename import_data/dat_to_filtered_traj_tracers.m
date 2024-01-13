@@ -3,10 +3,10 @@ clear;clc;close all
 % Set path were functions will be read from
 addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence'));
 
-fname = 'TrCer_1000_30_ddt_tracers';
+fname = 'TrCer_1000_15_ddt_inertial';
 
-%folderin = '/Volumes/landau1/Tracers/ddt_filtered_w10/';
-folderin = '/Volumes/landau1/Tracers/dat/ddt/';
+folderin = '/Volumes/landau1/TrCer_1000/dat/';
+%folderin = '/Volumes/landau1/Tracers/dat/ddt/';
 folderout = folderin;
 cd(folderin)
 
