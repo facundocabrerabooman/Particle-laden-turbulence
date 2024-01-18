@@ -103,9 +103,9 @@ figure;
 
 q=quiver(Y(:,5,:),Z(:,5,:),mYdt(:,5,:),mZdt(:,5,:),'r','LineWidth',2); hold on
 
-vel = reshape(mZdt(:,5,:),[10,10]);
-Ys = reshape(Y(:,5,:),[10,10]);
-Zs = reshape(Z(:,5,:),[10,10]);
+vel = reshape(mZdt(:,5,:),[8,8]);
+Ys = reshape(Y(:,5,:),[8,8]);
+Zs = reshape(Z(:,5,:),[8,8]);
 surf(Ys,Zs,vel)
 
 title('Vertical vel. colormap -- center vertical plane (Y)')
@@ -129,9 +129,9 @@ figure;
 
 q=quiver(Y(:,5,:),Z(:,5,:),mYdt(:,5,:),mZdt(:,5,:),'r','LineWidth',2); hold on
 
-vel = reshape(mYdt(:,5,:),[10,10]);
-Ys = reshape(Y(:,5,:),[10,10]);
-Zs = reshape(Z(:,5,:),[10,10]);
+vel = reshape(mYdt(:,5,:),[8,8]);
+Ys = reshape(Y(:,5,:),[8,8]);
+Zs = reshape(Z(:,5,:),[8,8]);
 surf(Ys,Zs,real(vel))
 
 title('Hor vel. colormap -- center vertical plane (Y)')
@@ -156,9 +156,9 @@ figure;
 
 %q=quiver(X(5,:,:),Z(5,:,:),mXdt(5,:,:),mZdt(5,:,:),'r','LineWidth',2); hold on
 
-vel = reshape(mZdt(5,:,:),[10,10]);
-Xs = reshape(X(5,:,:),[10,10]);
-Zs = reshape(Z(5,:,:),[10,10]);
+vel = reshape(mZdt(5,:,:),[8,8]);
+Xs = reshape(X(5,:,:),[8,8]);
+Zs = reshape(Z(5,:,:),[8,8]);
 surf(Xs,Zs,vel)
 
 title('Vertical vel. colormap -- center vertical plane (X fixed)')
@@ -182,9 +182,9 @@ figure;
 
 q=quiver(X(5,:,:),Z(5,:,:),mXdt(5,:,:),mZdt(5,:,:),'r','LineWidth',2); hold on
 
-vel = reshape(mXdt(5,:,:),[10,10]);
-Xs = reshape(X(5,:,:),[10,10]);
-Zs = reshape(Z(5,:,:),[10,10]);
+vel = reshape(mXdt(5,:,:),[8,8]);
+Xs = reshape(X(5,:,:),[8,8]);
+Zs = reshape(Z(5,:,:),[8,8]);
 surf(Xs,Zs,vel)
 
 title('Hor vel. colormap -- center vertical plane (X fixed)')

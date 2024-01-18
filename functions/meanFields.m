@@ -29,9 +29,13 @@ Fx=griddedInterpolant(X,Y,Z,mXdts,'linear','none');
 Fy=griddedInterpolant(X,Y,Z,mYdts,'linear','none');
 Fz=griddedInterpolant(X,Y,Z,mZdts,'linear','none');
 
-xx=linspace(gridRange.x(1),gridRange.x(2),100);
-yy=linspace(gridRange.y(1),gridRange.y(2),200);
-zz=linspace(gridRange.z(1),gridRange.z(2),100);
+% xx=linspace(gridRange.x(1),gridRange.x(2),100);
+% yy=linspace(gridRange.y(1),gridRange.y(2),200);
+% zz=linspace(gridRange.z(1),gridRange.z(2),100);
+
+xx=linspace(gridRange.x(1),gridRange.x(2),25);
+yy=linspace(gridRange.y(1),gridRange.y(2),50);
+zz=linspace(gridRange.z(1),gridRange.z(2),25);
 
 [XX,YY,ZZ]=ndgrid(xx,yy,zz);
 
@@ -41,25 +45,26 @@ mymeanFields.z = Fz(XX,YY,ZZ);
 
 %% prepare for slice visualization
 [mygrids.XX,mygrids.YY,mygrids.ZZ]=meshgrid(yy,xx,zz); 
+%[mygrids.XX,mygrids.YY,mygrids.ZZ]=meshgrid(xx,yy,zz); disp('fcb changed this')
 
 %%
 if ifsave ==1
     disp('saving')
     if n==1 
         if power ==1
-            filename = './Meanfields_Vel.mat'
+            filename = 'Meanfields_Vel.mat'
         elseif power ==2
-            filename = './Meanfields_Vel_rms.mat'
+            filename = 'Meanfields_Vel_rms.mat'
         end
     elseif n==2
         if power ==1
-            filename = './Meanfields_Acce.mat'
+            filename = 'Meanfields_Acce.mat'
         elseif power ==2
-            filename = './Meanfields_Acce_rms.mat'
+            filename = 'Meanfields_Acce_rms.mat'
         end
     end
-    
-    save(filename,'mXdt','mYdt','mZdt','mBxdt','mBydt','mBzdt','bins','N','threshold','mXdts','mYdts','mZdts','mymeanFields','mygrids')
+    mkdir('meanfields')
+    save(['meanfields' filesep filename],'mXdt','mYdt','mZdt','mBxdt','mBydt','mBzdt','bins','N','threshold','mXdts','mYdts','mZdts','mymeanFields','mygrids')
 end
 %% substact mean fields
 trackout = [];

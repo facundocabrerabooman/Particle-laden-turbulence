@@ -65,27 +65,27 @@ if nargin > 7
 end
 
 
-traj = addStructFun(traj,'X','N',@(X)(numel(X)));
+traj = addStructFun(traj,'Xf','N',@(X)(numel(X)));
 NN = [traj.N];
 Iinc = NN>2*max(dt);
 traj = traj(Iinc);
 %%
 
-trajinc = addStructFun(traj,'X','xr',@(X)(X(1+n*max(dt)/2:end-n*max(dt)/2)));
-trajinc = addStructFun(trajinc,'Y','yr',@(X)(X(1+n*max(dt)/2:end-n*max(dt)/2)));
-trajinc = addStructFun(trajinc,'Z','zr',@(X)(X(1+n*max(dt)/2:end-n*max(dt)/2)));
+trajinc = addStructFun(traj,'Xf','xr',@(X)(X(1+n*max(dt)/2:end-n*max(dt)/2)));
+trajinc = addStructFun(trajinc,'Yf','yr',@(X)(X(1+n*max(dt)/2:end-n*max(dt)/2)));
+trajinc = addStructFun(trajinc,'Zf','zr',@(X)(X(1+n*max(dt)/2:end-n*max(dt)/2)));
 
 
 switch coord
     case{'x'}
-        trajinc = addStructFun(trajinc,'X','dX',@(X)(finiteCenteredDiffn(X,dt,n,p)));
+        trajinc = addStructFun(trajinc,'Xf','dX',@(X)(finiteCenteredDiffn(X,dt,n,p)));
     case{'y'}
-        trajinc = addStructFun(trajinc,'Y','dX',@(X)(finiteCenteredDiffn(X,dt,n,p)));
+        trajinc = addStructFun(trajinc,'Yf','dX',@(X)(finiteCenteredDiffn(X,dt,n,p)));
     case{'z'}
-        trajinc = addStructFun(trajinc,'Z','dX',@(X)(finiteCenteredDiffn(X,dt,n,p)));
+        trajinc = addStructFun(trajinc,'Zf','dX',@(X)(finiteCenteredDiffn(X,dt,n,p)));
     case{'r'}
-        trajinc = addStructFun(trajinc,'X','dx',@(X)(finiteCenteredDiffn(X,dt,n,p)));
-        trajinc = addStructFun(trajinc,'Y','dy',@(X)(finiteCenteredDiffn(X,dt,n,p)));
+        trajinc = addStructFun(trajinc,'Xf','dx',@(X)(finiteCenteredDiffn(X,dt,n,p)));
+        trajinc = addStructFun(trajinc,'Yf','dy',@(X)(finiteCenteredDiffn(X,dt,n,p)));
         for k = 1:numel(trajinc)
             [th,r,z] = cart2pol(trajinc(k).xr,trajinc(k).yr,trajinc(k).zr);
             trajinc(k).r = r;

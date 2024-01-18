@@ -5,7 +5,7 @@ addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence'));
 
 fname = 'all_conc';
 
-folderin = '/Volumes/landau1/Tracers/ddt_moredata';
+folderin = '/Volumes/landau1/Tracers/ddt';
 folderout = folderin;
 cd(folderin)
 

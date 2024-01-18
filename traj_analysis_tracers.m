@@ -5,7 +5,7 @@ addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence'));
 
 fname = 'all_conc';
 
-folderin = '/Volumes/landau1/Tracers/ddt_moredata';
+folderin = '/Volumes/landau1/Tracers/ddt';
 folderout = folderin;
 cd(folderin)
 
@@ -46,57 +46,44 @@ if pi==pi
     load('trajsf_TrCer_1000_31_ddt_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
     clear tracklong
-    7
+    
     load('trajsf_TrCer_1000_30_ddt_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
     clear tracklong
-    % 7
-    % load('trajsf_TrCer_1000_28_ddt_tracers.mat','tracklong')
-    % trajs_conc = [trajs_conc tracklong];
-    % clear tracklong
-    % 7
-    % load('trajsf_TrCer_1000_29_ddt_tracers.mat','tracklong')
-    % trajs_conc = [trajs_conc tracklong];
-    % clear tracklong
-    % 7
-    % load('trajsf_TrCer_1000_27_ddt_tracers.mat','tracklong')
-    % trajs_conc = [trajs_conc tracklong];
-    % clear tracklong
-    % 7
-
     
-    % load('trajs_TrCer_1000_noturb.mat')
-    % trajs_conc = [trajs_conc tracklong];
+    load('trajsf_TrCer_1000_28_ddt_tracers.mat','tracklong')
+    trajs_conc = [trajs_conc tracklong];
+    clear tracklong
     
-    % load('ddt_july3.mat')
-    % trajs_conc = [trajs_conc traj_ddt];
-    % numel(trajs_conc)
-    % 3
-    % load('ddt_july7a.mat')
-    % trajs_conc = [trajs_conc traj_ddt];
-    % numel(trajs_conc)
-    % 4
-    % load('ddt_july7b.mat')
-    % trajs_conc = [trajs_conc traj_ddt];
-    % numel(trajs_conc)
-    % 5
-    % load('ddt_july7c.mat')
-    % trajs_conc = [trajs_conc traj_ddt];
-    % numel(trajs_conc)
-    % 6
-    % load('ddt_july9b.mat')
-    % trajs_conc = [trajs_conc traj_ddt];
-    % numel(trajs_conc)
-    % 7
-
+    load('trajsf_TrCer_1000_29_ddt_tracers.mat','tracklong')
+    trajs_conc = [trajs_conc tracklong];
+    clear tracklong
+    
+    load('trajsf_TrCer_1000_27_ddt_tracers.mat','tracklong')
+    trajs_conc = [trajs_conc tracklong];
+    clear tracklong
+    
     Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc)==1);
+    
 end
 trajs_conc = trajs_conc(Ine);
-clear tracklong traj_ddt
-try
-save('traj_conc_tracers_ddt','trajs_conc','-v7.3')
-catch
+
+%%% compute absolute value of vel and acc
+
+for i=1:numel(trajs_conc)
+
+     trajs_conc(i).Vabs = sqrt([trajs_conc(i).Vx].^2+[trajs_conc(i).Vy].^2+[trajs_conc(i).Vz].^2);
+     trajs_conc(i).Aabs = sqrt([trajs_conc(i).Ax].^2+[trajs_conc(i).Ay].^2+[trajs_conc(i).Az].^2);
+
+    %asd = [asd mean(trajs_conc(i).Vabs)];
 end
+%%%
+
+clear tracklong traj_ddt
+% try
+% save('traj_conc_tracers_ddt','trajs_conc','-v7.3')
+% catch
+% end
 
 %% Get Mean Velocity 
 if pi==pi
@@ -106,51 +93,50 @@ for i=1:numel(trajs_conc)
     trajs_conc(i).Z = trajs_conc(i).z;
 end
 
-[U, mBdt, bins] = track2meanDxDt3DProfile(trajs_conc,'Xf',2:2:50,[20 20 20],1,1,'x','cart');
-[V, ~, ~] = track2meanDxDt3DProfile(trajs_conc,'Yf',2:2:50,[20 20 20],1,1,'y','cart');
-[W, ~, ~] = track2meanDxDt3DProfile(trajs_conc,'Zf',2:2:50,[20 20 20],1,1,'z','cart');
+dt = [4 6 8 10];
+nbins = [20 21 22];
+threshold = 10;
+gridRange.x = [-40 40];
+gridRange.y = [-40 40];
+gridRange.z = [-40 40];
 
-[X,Y,Z]=meshgrid(bins{1},bins{2},bins{3});
+[gridsV,meanFieldsV, trajs_conc_minus_mean_field] = meanFields(trajs_conc,Fs,dt,nbins,threshold,1,1,gridRange,1);
 
-U=U.*Fs;
-V=V.*Fs;
-W=W.*Fs;
-
-%save('output_Vel_meanfields','U','V','W','mBdt','bins','X','Y','Z')
-
-
-trajs_conc_minus_mean_field = find_closest_bin(trajs_conc, X, Y, Z, U, V, W);
+trajs_conc_with_mean_field = trajs_conc; 
 trajs_conc = trajs_conc_minus_mean_field;
 
 Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc)==1);
-
 trajs_conc = trajs_conc(Ine);
 
-try
-save('trajs_conc_minus_mean_field','trajs_conc_minus_mean_field','-v7.3')
-catch
-end
+% try
+% save('trajs_conc_minus_mean_field','trajs_conc_minus_mean_field','-v7.3')
+% catch
+% end
 end
 %% 1 time - 1 particle statistics
 if pi==pi
 %% Calculate & plot velocity and acceleration pdfs
-pdfV(1) = mkpdf5(trajs_conc,'Vx',256,10);
+
+pdfVabs = mkpdf5(trajs_conc_with_mean_field,'Vabs',256,10);
+pdfAabs = mkpdf5(trajs_conc_with_mean_field,'Aabs',256,20);
+
+pdfV(1) = mkpdf5(trajs_conc_with_mean_field,'Vx',256,10);
 1
-pdfV(2) = mkpdf5(trajs_conc,'Vy',256,10);
+pdfV(2) = mkpdf5(trajs_conc_with_mean_field,'Vy',256,10);
 2
-pdfV(3) = mkpdf5(trajs_conc,'Vz',256,10);
+pdfV(3) = mkpdf5(trajs_conc_with_mean_field,'Vz',256,10);
 3
 
-pdfA(1) = mkpdf5(trajs_conc,'Ax',256,20);
+pdfA(1) = mkpdf5(trajs_conc_with_mean_field,'Ax',256,20);
 4
-pdfA(2) = mkpdf5(trajs_conc,'Ay',256,20);
+pdfA(2) = mkpdf5(trajs_conc_with_mean_field,'Ay',256,20);
 5
-pdfA(3) = mkpdf5(trajs_conc,'Az',256,20);
+pdfA(3) = mkpdf5(trajs_conc_with_mean_field,'Az',256,20);
 6
 stop
-try
-save('output_post_processing.mat','pdfV','pdfA')
-catch end
+% try
+% save('output_post_processing.mat','pdfV','pdfA')
+% catch end
 %% Plot Normalized PDFs
 figure;
 semilogy(pdfV(1).xpdfn,pdfV(1).pdfn,'d',MarkerSize=3,Color=color3(1,:),LineWidth=2);hold on;
@@ -177,7 +163,7 @@ ylim([5e-7 1])
 % text(5,0.05,['MeanVY = ' num2str(pdfV(2).mean)])
 % text(5,0.03,['MeanVZ = ' num2str(pdfV(3).mean)])
 
-folderout = 'pdfs/';
+folderout = 'pdfs';
 mkdir(folderout)
 savefig_FC([folderout filesep 'PDF_v'],8,6,'pdf')
 savefig_FC([folderout filesep 'PDF_v'],8,6,'fig')
@@ -200,13 +186,13 @@ grid off
 ylim([5e-7 1])
 
 
-folderout = 'pdfs/';
+folderout = 'pdfs';
 mkdir(folderout)
 savefig_FC([folderout 'PDF_a'],8,6,'pdf')
 savefig_FC([folderout 'PDF_a'],8,6,'fig')
 
 %% Table with moments of distribution
-maketable(pdfA,pdfV,folderout)
+maketable(pdfA,pdfV,pdfVabs,pdfAabs,folderout)
 
 %%
 
@@ -231,9 +217,9 @@ MSD(2) = structFunc_struct(trajs_conc,'Yf',2);
 MSD(3) = structFunc_struct(trajs_conc,'Zf',2);
 3
 
-try
-save('output_post_processing.mat','MSD','-append')
-catch end
+% try
+% save('output_post_processing.mat','MSD','-append')
+% catch end
 %%
 figure;
 loglog(MSD(1).tau/Fs,MSD(1).mean,'d',MarkerSize=3,Color=color3(1,:),LineWidth=2);hold on
@@ -253,7 +239,7 @@ grid on
 axis padded
 
 
-folderout = 'MSS/';
+folderout = 'MSS';
 mkdir(folderout)
 savefig_FC([folderout 'MSS'],8,6,'pdf')
 savefig_FC([folderout 'MSS'],8,6,'fig')
@@ -289,7 +275,7 @@ text(1e-2,1.5e4,'$\tau$','interpreter','latex','FontWeight','bold','FontSize',20
 grid on
 axis padded
 
-folderout = 'S2L/';
+folderout = 'S2L';
 mkdir(folderout)
 savefig_FC([folderout 'S2L'],8,6,'pdf')
 savefig_FC([folderout 'S2L'],8,6,'fig')
@@ -373,7 +359,7 @@ xlabel('$\tau$/s')
 grid on
 axis tight
 
-folderout = 'corr/';
+folderout = 'corr';
 mkdir(folderout)
 savefig_FC([folderout 'corr_classic'],8,6,'pdf')
 savefig_FC([folderout 'corr_classic'],8,6,'fig')
@@ -434,7 +420,7 @@ ylabel('$\frac{\langle a(t)a(t+\tau) \rangle} {\langle a^2(t) \rangle}$','interp
 xlim([0 0.04])
 
 
-folderout = 'corr/';
+folderout = 'corr';
 mkdir(folderout)
 savefig_FC([folderout 'corr_dt'],8,6,'pdf')
 savefig_FC([folderout 'corr_dt'],8,6,'fig')
