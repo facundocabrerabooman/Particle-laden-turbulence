@@ -133,7 +133,7 @@ pdfA(2) = mkpdf5(trajs_conc_with_mean_field,'Ay',256,20);
 5
 pdfA(3) = mkpdf5(trajs_conc_with_mean_field,'Az',256,20);
 6
-stop
+
 % try
 % save('output_post_processing.mat','pdfV','pdfA')
 % catch end
@@ -241,18 +241,18 @@ axis padded
 
 folderout = 'MSS';
 mkdir(folderout)
-savefig_FC([folderout 'MSS'],8,6,'pdf')
-savefig_FC([folderout 'MSS'],8,6,'fig')
+savefig_FC([folderout filesep  'MSS'],8,6,'pdf')
+savefig_FC([folderout filesep 'MSS'],8,6,'fig')
 
 %% Longitudinal S2
 
-S2L(1)= structFunc_struct(trajs_conc,'Vx',2);
-S2L(2)= structFunc_struct(trajs_conc,'Vy',2);
-S2L(3)= structFunc_struct(trajs_conc,'Vz',2);
+S2L(1)= structFunc_struct(trajs_conc_with_mean_field,'Vx',2);
+S2L(2)= structFunc_struct(trajs_conc_with_mean_field,'Vy',2);
+S2L(3)= structFunc_struct(trajs_conc_with_mean_field,'Vz',2);
 
-try
-save('output_post_processing.mat','S2L')
-catch end
+% try
+% save('output_post_processing.mat','S2L')
+% catch end
 %%
 % figure;loglog(S2Lx.tau,S2Lx.mean./S2Lx.tau/Fs/2)
 figure;
@@ -277,8 +277,8 @@ axis padded
 
 folderout = 'S2L';
 mkdir(folderout)
-savefig_FC([folderout 'S2L'],8,6,'pdf')
-savefig_FC([folderout 'S2L'],8,6,'fig')
+savefig_FC([folderout filesep 'S2L'],8,6,'pdf')
+savefig_FC([folderout filesep 'S2L'],8,6,'fig')
 end
 %% Velocity and Acceleration Correlations
 if pi==pi
@@ -300,7 +300,7 @@ try
 save('output_post_processing.mat','Ruu','Raa')
 catch end
 %% Tracer: fit correlation  -- Thomas's 
-addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence/cheng'));
+addpath(genpath('/Users/fcb/Documents/GitHub/Cheng'));
 
 nCorrFitV = 270;
 nCorrFitA = 20;

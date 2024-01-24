@@ -75,37 +75,33 @@ clear tracklong traj_ddt
 %save('traj_conc_tracers_ddt','trajs_conc','Ine','-v7.3')
 
 %% Get Mean Velocity 
-
+if pi==pi
 for i=1:numel(trajs_conc)
     trajs_conc(i).X = trajs_conc(i).x;
     trajs_conc(i).Y = trajs_conc(i).y;
     trajs_conc(i).Z = trajs_conc(i).z;
 end
 
-[U, mBdt, bins] = track2meanDxDt3DProfile(trajs_conc,'Xf',2:2:50,[20 20 20],1,1,'x','cart');
-[V, ~, ~] = track2meanDxDt3DProfile(trajs_conc,'Yf',2:2:50,[20 20 20],1,1,'y','cart');
-[W, ~, ~] = track2meanDxDt3DProfile(trajs_conc,'Zf',2:2:50,[20 20 20],1,1,'z','cart');
+dt = [4 6 8 10];
+nbins = [20 21 22];
+threshold = 10;
+gridRange.x = [-40 40];
+gridRange.y = [-40 40];
+gridRange.z = [-40 40];
 
-[X,Y,Z]=meshgrid(bins{1},bins{2},bins{3});
+[gridsV,meanFieldsV, trajs_conc_minus_mean_field] = meanFields(trajs_conc,Fs,dt,nbins,threshold,1,1,gridRange,1);
 
-U=U.*Fs;
-V=V.*Fs;
-W=W.*Fs;
+trajs_conc_with_mean_field = trajs_conc; 
+trajs_conc = trajs_conc_minus_mean_field;
 
-%save('output_Vel_meanfields','U','V','W','mBdt','bins','X','Y','Z')
+Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc)==1);
+trajs_conc = trajs_conc(Ine);
 
-
-trajs_conc_minus_mean_field = find_closest_bin(trajs_conc, X, Y, Z, U, V, W);
-Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc_minus_mean_field)==1);
-
-try
-save([folderout filesep 'trajs_conc_minus_mean_field'],'trajs_conc_minus_mean_field','-v7.3')
-catch end
-%%
-mycolormap = mycolor('#063970','#e28743');%('#063970','#eeeee4','#e28743')
-color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,:)];
-color1 = '#476d76';
-
+% try
+% save('trajs_conc_minus_mean_field','trajs_conc_minus_mean_field','-v7.3')
+% catch
+% end
+end
 %% Eulerian 2-point statistics
 clearvars -except trajs_conc_minus_mean_field Ine
 
@@ -118,6 +114,7 @@ mkdir('euler_split')
 for i=24:40
     i
     tic
+    try
     [eulerStats_tmp,~] = twoPointsEulerianStats_Mica_Speedup(trajs_conc_minus_mean_field((i-1)*a+1:(a*i)),[0.5 40],30,'off');
     
     % Append loop index `i` to the variable name
@@ -128,6 +125,7 @@ for i=24:40
     
     % Save the output with the dynamic filename
     save(['euler_split' filesep filename], sprintf('eulerStats_tmp_%d', i), '-v7.3');
+    catch end
     toc
 end
 stop
@@ -239,10 +237,10 @@ text(4,4e4,'$r^1$','interpreter','latex',FontWeight='bold',FontSize=18)
 grid on
 axis padded
 
-folderout = 'S2euler/';
+folderout = 'S2euler';
 mkdir(folderout)
-savefig_custom([folderout 'S2e'],8,6,'pdf')
-savefig_custom([folderout 'S2e'],8,6,'fig')
+savefig_custom([folderout filesep 'S2e'],8,6,'pdf')
+savefig_custom([folderout filesep 'S2e'],8,6,'fig')
 
 figure;hold on;
 semilogy(eulerStats.r,(eulerStats.Splong{2}./2.1).^(3/2)./eulerStats.r'./1e6,'o-')
@@ -256,10 +254,10 @@ title('Compensated Eulerian S2ps');
 fname = 'compensated_S2_epsilon';
  
 
-folderout = 'S2euler/';
+folderout = 'S2euler';
 mkdir(folderout)
-savefig_custom([folderout 'S2el_compensated_epsilon'],8,6,'pdf')
-savefig_custom([folderout 'S2el_compensated_epsilon'],8,6,'fig')
+savefig_custom([folderout filesep 'S2el_compensated_epsilon'],8,6,'pdf')
+savefig_custom([folderout filesep 'S2el_compensated_epsilon'],8,6,'fig')
 
 
 %% plot Spn_abs
