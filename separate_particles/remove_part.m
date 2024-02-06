@@ -4,12 +4,13 @@ st = strel('disk',PartRadius);
 stdil = strel('disk',round(PartRadius/3));
 
 Imd = imdilate(imbinarize(imopen(Im,st)),stdil);
+%Imd = imbinarize(imopen(Im,st));
 
 %% refine particle image
-Rp=sqrt(numel(find(Imd~=0)))/pi;
+%Rp=sqrt(numel(find(Imd~=0)))/pi;
 
-Rmin = max(0.6*Rp,4);
-Rmax = max(1.6*Rp,15);
+Rmin = max(0.4*PartRadius,5);
+Rmax = max(1.8*PartRadius,15);
 [C, R] = imfindcircles(Imd, cast([Rmin Rmax],class(Im)));
 if size(C,1) == 1
     roi=images.roi.Circle('Center',C,'Radius',R);

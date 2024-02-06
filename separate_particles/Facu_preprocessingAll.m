@@ -3,26 +3,22 @@ clear
 clc
 
 % input
-fpath0 = '/Users/fcb/AuxFiles/test_bottom_pump/';
+fpath0 = 'M:\TrCer_1000\TrCer_1000_49\';
 cd(fpath0)
-%Istart = 2; % better to ignore the 1st image
+
+part_radius = 6;
  
-%%
 fpath = [fpath0 filesep 'raw'];
 % get the folder contents
-addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence'));
+addpath(genpath('C:\Users\meatlab1-admin\Documents\facundo\Particle-laden-turbulence'));
 %dfolders = FunSubfolder(fpath);
 dfolders = [];
 
-%% preproc & split
+%%% preproc & split
+datasets = {'fullg','ddt','dec'};
 
-%dataset = 'fullg';
-%dataset = 'ddt';
-dataset = 'dec';
-
-
-% parfor i = 1:size(dfolders,1)
-for i = 1:1
+for j = 1:3
+dataset = datasets{j};
 
     %image_list = dir([subfolders filesep '*.tiff']);
     image_list = dir([fpath filesep 'Camera1' filesep '*.tiff']);
@@ -73,7 +69,6 @@ for i = 1:1
     counter = 0;
 
     for k=Istart:Iend
-    %for k=Istart:Iend
         counter = counter+1;
         k/Iend
 
@@ -82,10 +77,10 @@ for i = 1:1
         Im1_originalSize = imread(fname);
 
         intensity_thr = 1e3;
-        [Im01,Im1t,Im1p]=Facu_preprocessing(Im1_originalSize,intensity_thr,6,1,bkg1_originalSize);
+        [~,Im1t,Im1p]=Facu_preprocessing(Im1_originalSize,intensity_thr,part_radius,1,bkg1_originalSize);
         fnameo = ['cam1_frame_preproc_' num2str(counter,'%06d') '.tiff'];
         imwrite(uint16(Im1t),[preproc_dirt filesep fnameo])
-        %imwrite(uint16(Im1p),[preproc_dirp filesep fnameo]);
+        imwrite(uint16(Im1p),[preproc_dirp filesep fnameo]);
 %                 figure(10);
 %                 subplot(2,1,1);imagesc(Im1_originalSize);axis equal
 %                 subplot(2,1,2);imagesc(Im1p);axis equal
@@ -98,10 +93,10 @@ for i = 1:1
         %         Im2 = cast(zeros(1080,1920),class(Im2_originalSize));
         %         Im2(285:796,321:1600) = Im2_originalSize;
         intensity_thr = 1e3;
-        [Im02,Im2t,Im2p]=Facu_preprocessing(Im2_originalSize,intensity_thr,6,2,bkg2_originalSize);
+        [~,Im2t,Im2p]=Facu_preprocessing(Im2_originalSize,intensity_thr,part_radius,2,bkg2_originalSize);
         fnameo = ['cam2_frame_preproc_' num2str(counter,'%06d') '.tiff'];
         imwrite(uint16(Im2t),[preproc_dirt filesep fnameo]);
-        %imwrite(uint16(Im2p),[preproc_dirp filesep fnameo]);
+        imwrite(uint16(Im2p),[preproc_dirp filesep fnameo]);
 %                figure(10);
 %                  subplot(2,1,1);imagesc(Im2_originalSize);axis equal
 %                  subplot(2,1,2);imagesc(Im2p);axis equal
@@ -113,10 +108,10 @@ for i = 1:1
         %         Im3 = cast(zeros(1080,1920),class(Im3_originalSize));
         %         Im3(285:796,321:1600) = Im3_originalSize;
         intensity_thr = 1e3;
-        [Im03,Im3t,Im3p] =Facu_preprocessing(Im3_originalSize,intensity_thr,6,3,bkg3_originalSize);
+        [~,Im3t,Im3p] =Facu_preprocessing(Im3_originalSize,intensity_thr,part_radius,3,bkg3_originalSize);
         fnameo = ['cam3_frame_preproc_' num2str(counter,'%06d') '.tiff'];
         imwrite(uint16(Im3t),[preproc_dirt filesep fnameo]);
-        %imwrite(uint16(Im3p),[preproc_dirp filesep fnameo]);
+        imwrite(uint16(Im3p),[preproc_dirp filesep fnameo]);
 %                          figure(10);
 %                  subplot(2,1,1);imagesc(Im3_originalSize);axis equal
 %                  subplot(2,1,2);imagesc(Im3p);axis equal
@@ -124,7 +119,6 @@ for i = 1:1
 
     end
 end
-
 stop
 %% Test camera 1
 
