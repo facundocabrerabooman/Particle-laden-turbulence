@@ -2,12 +2,12 @@
 clfc
 
 cam = 3;
-for frame=1:7
+for frame=1:6
 
 %%%%%%%%%
-pathcalib = ['/Users/fcb/AuxFiles/calib_12-13-23/Camera' num2str(cam) filesep num2str(frame)];
+pathcalib = ['/Users/fcb/AuxFiles/calib_2-13-24/Camera' num2str(cam) filesep num2str(frame)];
 
-pathout = '/Users/fcb/AuxFiles/calib_12-13-23//';
+pathout = '/Users/fcb/AuxFiles/calib_2-13-24/';
 
 fname = ['cam' num2str(cam) '_frame_preproc_00000' num2str(frame)];
 
@@ -18,7 +18,7 @@ image_list = dir([pathcalib filesep '*.tiff']);
 
 imsum = zeros(512,1280);
 
- im = imread([pathcalib filesep image_list(5).name]);
+ %im = imread([pathcalib filesep image_list(5).name]);
  %imshow(im)
 % h = imfreehand;
 
@@ -26,14 +26,18 @@ for i=5:numel(image_list)
     
     im = imread([pathcalib filesep image_list(i).name]);
     
-    im=imadjust(im);
+    %thr = 1.5e4; % cam1
+    %thr = 4e4; % cam2
+    %thr = 2.8e4; % cam3
+
+    %im(im<thr) = 0;
+    %im(im>thr) = 65535;
 
     imsum = imadd(double(im),imsum);
     
 end
 
 imaver = uint16(imsum./numel(image_list));
-%imaver(imaver>2e4)=0;
 
 st=strel('disk',1);
 imaver=imopen(imaver,st);

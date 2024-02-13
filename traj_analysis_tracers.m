@@ -5,7 +5,7 @@ addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence'));
 
 fname = 'all_conc';
 
-folderin = '/Volumes/landau1/Tracers/ddt';
+folderin = '/Volumes/landau1/Tracers/fullg';
 folderout = folderin;
 cd(folderin)
 
@@ -18,50 +18,92 @@ color1 = '#476d76';
 
 if pi==pi
     trajs_conc = [];
-    
-    load('trajs_TrCer_1000_11_ddt_tracers.mat','tracklong')
+%%% TRACERS    
+    % load('trajs_TrCer_1000_11_ddt_tracers.mat','tracklong')
+    % trajs_conc = [trajs_conc tracklong];
+    % clear tracklong
+    % 1
+    % load('trajs_TrCer_1000_13_ddt_tracers.mat','tracklong')
+    % trajs_conc = [trajs_conc tracklong];
+    % clear tracklong
+    % 2
+    % load('trajs_TrCer_1000_14_ddt_tracers.mat','tracklong')
+    % trajs_conc = [trajs_conc tracklong];
+    % clear tracklong
+    % 3
+    % load('trajs_TrCer_1000_15_ddt_tracers.mat','tracklong')
+    % trajs_conc = [trajs_conc tracklong];
+    % clear tracklong
+    % 4
+    % load('trajsf1_TrCer_1000_32_ddt_tracers.mat','tracklong1')
+    % trajs_conc = [trajs_conc tracklong1];
+    % clear tracklong1
+    % 5
+    % load('trajsf2_TrCer_1000_32_ddt_tracers.mat','tracklong2')
+    % trajs_conc = [trajs_conc tracklong2];
+    % clear tracklong2
+    % 6
+    % load('trajsf_TrCer_1000_31_ddt_tracers.mat','tracklong')
+    % trajs_conc = [trajs_conc tracklong];
+    % clear tracklong
+    % 
+    % load('trajsf_TrCer_1000_30_ddt_tracers.mat','tracklong')
+    % trajs_conc = [trajs_conc tracklong];
+    % clear tracklong
+    % 
+    % load('trajsf_TrCer_1000_28_ddt_tracers.mat','tracklong')
+    % trajs_conc = [trajs_conc tracklong];
+    % clear tracklong
+    % 
+    % load('trajsf_TrCer_1000_29_ddt_tracers.mat','tracklong')
+    % trajs_conc = [trajs_conc tracklong];
+    % clear tracklong
+    % 
+    % load('trajsf_TrCer_1000_27_ddt_tracers.mat','tracklong')
+    % trajs_conc = [trajs_conc tracklong];
+    % clear tracklong
+
+
+    load('trajsf_TrCer_1000_26_fullg_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
     clear tracklong
     1
-    load('trajs_TrCer_1000_13_ddt_tracers.mat','tracklong')
+    load('trajsf_TrCer_1000_27_fullg_tracers.mat','tracklong')
+    trajs_conc = [trajs_conc tracklong];
+    clear tracklong
+    1
+    load('trajsf_TrCer_1000_28_fullg_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
     clear tracklong
     2
-    load('trajs_TrCer_1000_14_ddt_tracers.mat','tracklong')
+    load('trajsf_TrCer_1000_29_fullg_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
     clear tracklong
     3
-    load('trajs_TrCer_1000_15_ddt_tracers.mat','tracklong')
+    load('trajsf_TrCer_1000_30_fullg_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
     clear tracklong
-    4
-    load('trajsf1_TrCer_1000_32_ddt_tracers.mat','tracklong1')
-    trajs_conc = [trajs_conc tracklong1];
-    clear tracklong1
-    5
-    load('trajsf2_TrCer_1000_32_ddt_tracers.mat','tracklong2')
-    trajs_conc = [trajs_conc tracklong2];
-    clear tracklong2
     6
-    load('trajsf_TrCer_1000_31_ddt_tracers.mat','tracklong')
+    load('trajsf_TrCer_1000_31_fullg_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
     clear tracklong
-    
-    load('trajsf_TrCer_1000_30_ddt_tracers.mat','tracklong')
+
+    load('trajsf_TrCer_1000_32_fullg_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
     clear tracklong
-    
-    load('trajsf_TrCer_1000_28_ddt_tracers.mat','tracklong')
+
+    load('trajsf_TrCer_1000_33_fullg_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
     clear tracklong
-    
-    load('trajsf_TrCer_1000_29_ddt_tracers.mat','tracklong')
+
+    load('trajsf_TrCer_1000_35_fullg_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
     clear tracklong
-    
-    load('trajsf_TrCer_1000_27_ddt_tracers.mat','tracklong')
+
+    load('trajsf_TrCer_1000_37_fullg_tracers.mat','tracklong')
     trajs_conc = [trajs_conc tracklong];
     clear tracklong
+
     
     Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc)==1);
     
@@ -80,6 +122,8 @@ end
 %%%
 
 clear tracklong traj_ddt
+trajs_conc_with_mean_field = trajs_conc; 
+
 % try
 % save('traj_conc_tracers_ddt','trajs_conc','-v7.3')
 % catch
@@ -117,21 +161,21 @@ end
 if pi==pi
 %% Calculate & plot velocity and acceleration pdfs
 
-pdfVabs = mkpdf5(trajs_conc_with_mean_field,'Vabs',256,10);
-pdfAabs = mkpdf5(trajs_conc_with_mean_field,'Aabs',256,20);
+pdfVabs = mkpdf5(trajs_conc,'Vabs',256,10);
+pdfAabs = mkpdf5(trajs_conc,'Aabs',256,20);
 
-pdfV(1) = mkpdf5(trajs_conc_with_mean_field,'Vx',256,10);
+pdfV(1) = mkpdf5(trajs_conc,'Vx',256,10);
 1
-pdfV(2) = mkpdf5(trajs_conc_with_mean_field,'Vy',256,10);
+pdfV(2) = mkpdf5(trajs_conc,'Vy',256,10);
 2
-pdfV(3) = mkpdf5(trajs_conc_with_mean_field,'Vz',256,10);
+pdfV(3) = mkpdf5(trajs_conc,'Vz',256,10);
 3
 
-pdfA(1) = mkpdf5(trajs_conc_with_mean_field,'Ax',256,20);
+pdfA(1) = mkpdf5(trajs_conc,'Ax',256,20);
 4
-pdfA(2) = mkpdf5(trajs_conc_with_mean_field,'Ay',256,20);
+pdfA(2) = mkpdf5(trajs_conc,'Ay',256,20);
 5
-pdfA(3) = mkpdf5(trajs_conc_with_mean_field,'Az',256,20);
+pdfA(3) = mkpdf5(trajs_conc,'Az',256,20);
 6
 
 % try
@@ -251,7 +295,7 @@ S2L(2)= structFunc_struct(trajs_conc_with_mean_field,'Vy',2);
 S2L(3)= structFunc_struct(trajs_conc_with_mean_field,'Vz',2);
 
 % try
-% save('output_post_processing.mat','S2L')
+ save('S2L.mat','S2L','-v7.3')
 % catch end
 %%
 % figure;loglog(S2Lx.tau,S2Lx.mean./S2Lx.tau/Fs/2)
@@ -267,18 +311,38 @@ loglog(xS2L,9.5e5*xS2L.^1,'--',Color=color1,LineWidth=2)
 % xS2L = linspace(100,300,100);
 % loglog(xS2L,8e4*xS2L.^0,'--',Color=color1,LineWidth=2)
 
-legend('$S_2^L(x)$','$S_2^L(y)$','$S_2^L(z)$','interpreter','latex',Location='southeast')
+legend('$S_2^L(x)$','$S_2^L(y)$','$S_2^L(z)$','interpreter','latex',Location='northwest')
 ylabel('$S_2^L$','interpreter','latex',FontWeight='bold')
-xlabel('$\tau / sec$','interpreter','latex',FontWeight='bold')
+xlabel('$\tau$ (s)','interpreter','latex',FontWeight='bold')
 text(8e-4,8e2,'$\tau^2$','interpreter','latex','FontWeight','bold','FontSize',20)
 text(1e-2,1.5e4,'$\tau$','interpreter','latex','FontWeight','bold','FontSize',20)
 grid on
 axis padded
 
-folderout = 'S2L';
-mkdir(folderout)
-savefig_FC([folderout filesep 'S2L'],8,6,'pdf')
-savefig_FC([folderout filesep 'S2L'],8,6,'fig')
+ folderout = 'S2L';
+ mkdir(folderout)
+ savefig_FC([folderout filesep 'S2L'],8,6,'pdf')
+ savefig_FC([folderout filesep 'S2L'],8,6,'fig')
+
+
+%%% add Co inset
+
+axes('Position',[.5 .3 .3 .3])
+box on
+
+loglog(S2L(1).tau/Fs,S2L(1).mean./(S2L(1).tau/Fs*5.8e4),'d',MarkerSize=3,Color=color3(1,:),LineWidth=2);hold on
+loglog(S2L(2).tau/Fs,S2L(2).mean./(S2L(2).tau/Fs*5.8e4),'d',MarkerSize=3,Color=color3(2,:),LineWidth=2);
+loglog(S2L(3).tau/Fs,S2L(3).mean./(S2L(3).tau/Fs*5.8e4),'d',MarkerSize=3,Color=color3(3,:),LineWidth=2);
+
+yline(5.28,'k','LineWidth',3)
+
+ylim([0.08 10])
+
+ylabel('$C_k = S_2^L/(\epsilon \tau)$','interpreter','latex',FontWeight='bold')
+xlabel('$\tau$ (s)','interpreter','latex',FontWeight='bold')
+
+savefig_FC([folderout filesep 'S2L_insetC0'],8,6,'pdf')
+savefig_FC([folderout filesep 'S2L_insetC0'],8,6,'fig')
 end
 %% Velocity and Acceleration Correlations
 if pi==pi
