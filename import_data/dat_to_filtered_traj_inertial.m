@@ -1,13 +1,13 @@
-clear;clc;close all
+%clear;clc;close all
 
 % Set path were functions will be read from
 addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence'));
 
-fname = 'TrCer_1000_13_fullg_inertial';
-fname_tracers = 'trajs_TrCer_1000_13_fullg_tracers';
+fname = 'TrCer_1000_04_ddt_tracer_2111-end';
+fname_tracers = 'TrCer_1000_01_fullg_tracer';
 
-folderin = '/Volumes/landau1/TrCer_1000/dat/';
-folderin_tracers = '/Volumes/landau1/Tracers/dat/';
+folderin = '/Volumes/landau1/TrCer_analysis_paper#1/exports/tracers/ddt/';
+folderin_tracers = '/Volumes/landau1/TrCer_analysis_paper#1/exports/fullg_pairs/';
 
 folderout = folderin;
 cd(folderin)
@@ -35,7 +35,7 @@ numFrames = 9e9;
 L = arrayfun(@(X)(numel(X.x)),traj);
 Ilong = find(L>=10);
 %% Find proper filter width
-if pi==pi
+if 1==pi
 [s(1), m(1), w]=findFilterWidth_PTV(traj(Ilong),'x');
 [s(2), m(2), w]=findFilterWidth_PTV(traj(Ilong),'y');
 [s(3), m(3), w]=findFilterWidth_PTV(traj(Ilong),'z');
@@ -79,18 +79,20 @@ savefig_custom([folderout 'filter_check_' fname],8,6,'fig')
 save(['filter_check_' fname filesep 'output_filtering.mat'],'s','m','w')
 end
 %%  Estimate filtered tracks, velocities and accelerations with optimal filter width
-wopt = 10;
-lopt = 30;
+wopt = 3;
+lopt = 10;
 
 Fs = 2990;
 
 %[~, tracklong]=compute_vel_acc_traj(traj(Ilong),Fs,wopt,lopt);
 
-tracklong=calcVelLEM(traj,wopt,lopt,Fs, wopt, lopt);
+tracklong=calcVelLEM(traj,wopt,lopt,Fs);
 
 Ine=find(arrayfun(@(X)(~isempty(X.Vx)),tracklong)==1);
 
-save(['trajs_' fname '.mat'],'Ine','tracklong')
+tracklong = tracklong(Ine);
+
+save(['trajsf_' fname '.mat'],'tracklong')
 
 %% Traj. graph
 
@@ -101,26 +103,24 @@ zt=vertcat(tracklong.z);
 
 figure(10);clf
 
-plot3(xt,yt,zt,'o');hold on
+plot3(xt,yt,zt,'.');hold on
 
 axis equal
 box on
 xlabel('mm')
 ylabel('mm')
 zlabel('mm')
-
+stop
 %% Compute slip velocity
 
 tracklong_inertial = tracklong; clear tracklong
 
-load([folderin_tracers filesep fname_tracers '.mat'])
+load([folderin_tracers filesep 'trajsf_' fname_tracers '.mat'])
 tracklong_tracers = tracklong; clear tracklong
 
-
-
-stop
-
-
+bigParticleTrajectory = tracklong_inertial;
+dustParticleData = tracklong_tracers;
+%%
 
 % Initialize arrays to store results
 bigParticleVelocityCorrected = zeros(size(bigParticleTrajectory));

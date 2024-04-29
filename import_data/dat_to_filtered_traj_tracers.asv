@@ -1,16 +1,16 @@
 for j=1
 
-clear;clc;close all
+%clear;clc;close all
 
 % Set path were functions will be read from
 addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence'));
 
-realis = [1];
+realis = [3 5];
 
-%fname = ['noturb_TrCer_1000_0' num2str(realis(j)) '_dec_particle'];
-fname = 'TrCer_1000_02_ddt_tracer';
+fname = ['TrCer_1000_0' num2str(realis(j)) '_dec_particle'];
 
-folderin = '/Volumes/landau1/TrCer_analysis_paper#1/exports/ddt_pairs/';
+folderin = '/Volumes/landau1/TrCer_1000/dec/';
+%folderin = '/Volumes/landau1/Tracers/dat/ddt/';
 folderout = folderin;
 cd(folderin)
 
@@ -29,7 +29,7 @@ flag_pred=0;
 npriormax=4; 
 porder=3; % order of polynomial fit  
 flag_conf=1; 
-numFrames = 9e9; % number of frames to find trajectories in.
+numFrames = 9e9; % number of frames to 
 
 [traj,~]=track3d_fc_stb(d,folderin,folderout,fname,maxdist,lmin,flag_pred,npriormax,porder,flag_conf, numFrames, Fs);
 
@@ -81,11 +81,11 @@ savefig_custom([folderout 'filter_check_' fname],8,6,'fig')
 save(['filter_check_' fname filesep 'output_filtering.mat'],'s','m','w')
 end
 %%  Estimate filtered tracks, velocities and accelerations with optimal filter width
-wopt = 3; % = lopt/3
+wopt = 3;
 lopt = 10;
 
 Fs = 2990;
- 
+
 %[~, tracklong]=compute_vel_acc_traj(traj(Ilong),Fs,wopt,lopt);
 
 tracklong=calcVelLEM(traj,wopt,lopt,Fs);
@@ -94,21 +94,21 @@ Ine=find(arrayfun(@(X)(~isempty(X.Vx)),tracklong)==1);
 
 tracklong = tracklong(Ine);
 %stop
- if numel(tracklong)>1e5
-     tracklong1=tracklong(1:round(numel(tracklong)/2));
-     tracklong2=tracklong(round(numel(tracklong)/2):numel(tracklong));
-     save(['trajsf1_' fname '.mat'],'Ine','tracklong1','-v7.3')
-     save(['trajsf2_' fname '.mat'],'Ine','tracklong2','-v7.3')
- else
-    save(['trajsf_' fname '.mat'],'tracklong','-v7.3')
-end
+% if numel(tracklong)>1e5
+%     tracklong1=tracklong(1:round(numel(tracklong)/2));
+%     tracklong2=tracklong(round(numel(tracklong)/2):numel(tracklong));
+%     save(['trajsf1_' fname '.mat'],'Ine','tracklong1','-v7.3')
+%     save(['trajsf2_' fname '.mat'],'Ine','tracklong2','-v7.3')
+% else
+    save(['trajsf_' fname '.mat'],'Ine','tracklong','-v7.3')
+%end
 
 %% 
 figure(10); clf; hold on; grid on; box on
 %tracklong = traj;
 
-for i=1:numel(tracklong)/100
-p
+for i=1:numel(tracklong)
+
     scatter3(tracklong(i).Xf,tracklong(i).Yf,tracklong(i).Zf, 10, tracklong(i).Vy, 'filled');
     %scatter3(tracklong(i).x,tracklong(i).y,tracklong(i).z, 10, 'filled');
 
@@ -118,7 +118,7 @@ ylabel('Y (vertical - antigravity)')
 zlabel('Z (spanwise)')
  
 colorbar
-stop
+
 savefig_FC(['3Dtrajs_' fname],8,6,'pdf');
 savefig_FC(['3Dtrajs_' fname],8,6,'fig');
 end

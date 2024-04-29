@@ -21,7 +21,7 @@ function splitVelCyl = slipVeloCylindrical_fcb(particle_part, tracers_part, neig
 %           .Urel       - Relative slip velocity in cylindrical coordinates.
 %
 
-Nframemax = 1e6;
+Nframemax = 1e7;
 
 % Set default value for frame-related parameter
 kexp = 1;
@@ -30,8 +30,10 @@ if nargin > 5
 end
 
 % Calculate start and end times within the frame limit
-tstart = mod(startTime(kexp), Nframemax);
-tend = mod(endTime(kexp), Nframemax);
+% tstart = mod(startTime(kexp), Nframemax);
+% tend = mod(endTime(kexp), Nframemax);
+tstart = 1;
+tend = numel(neighborIdxAll);
 
 for t = tstart:tend
 
@@ -65,7 +67,7 @@ for t = tstart:tend
         [slipVeloCylind(i,:).rho, slipVeloCylind(i,:).theta, slipVeloCylind(i,:).z] = cartToCylind(rXp, rXf);
 
         % Calculate relative slip velocity in cylindrical coordinates
-        slipVeloCylind(i,:).Urel = rUf - rVp;
+        slipVeloCylind(i,:).Urel = -(rUf - rVp); % FCB changed sign
 
         % Record time
         slipVeloCylind(i).t = t;

@@ -3,11 +3,13 @@ clear;clc;close all
 % Set path were functions will be read from
 addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence'));
 
-fname = 'all_conc';
+fname = 'TrCer_1000_ddt_tracer';
 
-folderin = '/Volumes/landau1/Tracers/fullg';
-folderout = folderin;
-cd(folderin)
+folderin = '/Volumes/landau1/TrCer_analysis_paper#1/exports/tracers/ddt/';
+folderout=folderin;
+%folderout = '/Volumes/landau1/TrCer_analysis_paper#1/analysis_tracers/ddt/';
+mkdir(folderout)
+cd(folderout)
 
 Fs=2990; % Frame rate
 
@@ -15,99 +17,28 @@ mycolormap = mycolor('#063970','#e28743');%('#063970','#eeeee4','#e28743')
 color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,:)];
 color1 = '#476d76';
 %% Concatenate data
-
-if pi==pi
     trajs_conc = [];
+
+if 1==pi
 %%% TRACERS    
-    % load('trajs_TrCer_1000_11_ddt_tracers.mat','tracklong')
-    % trajs_conc = [trajs_conc tracklong];
-    % clear tracklong
-    % 1
-    % load('trajs_TrCer_1000_13_ddt_tracers.mat','tracklong')
-    % trajs_conc = [trajs_conc tracklong];
-    % clear tracklong
-    % 2
-    % load('trajs_TrCer_1000_14_ddt_tracers.mat','tracklong')
-    % trajs_conc = [trajs_conc tracklong];
-    % clear tracklong
-    % 3
-    % load('trajs_TrCer_1000_15_ddt_tracers.mat','tracklong')
-    % trajs_conc = [trajs_conc tracklong];
-    % clear tracklong
-    % 4
-    % load('trajsf1_TrCer_1000_32_ddt_tracers.mat','tracklong1')
-    % trajs_conc = [trajs_conc tracklong1];
-    % clear tracklong1
-    % 5
-    % load('trajsf2_TrCer_1000_32_ddt_tracers.mat','tracklong2')
-    % trajs_conc = [trajs_conc tracklong2];
-    % clear tracklong2
-    % 6
-    % load('trajsf_TrCer_1000_31_ddt_tracers.mat','tracklong')
-    % trajs_conc = [trajs_conc tracklong];
-    % clear tracklong
-    % 
-    % load('trajsf_TrCer_1000_30_ddt_tracers.mat','tracklong')
-    % trajs_conc = [trajs_conc tracklong];
-    % clear tracklong
-    % 
-    % load('trajsf_TrCer_1000_28_ddt_tracers.mat','tracklong')
-    % trajs_conc = [trajs_conc tracklong];
-    % clear tracklong
-    % 
-    % load('trajsf_TrCer_1000_29_ddt_tracers.mat','tracklong')
-    % trajs_conc = [trajs_conc tracklong];
-    % clear tracklong
-    % 
-    % load('trajsf_TrCer_1000_27_ddt_tracers.mat','tracklong')
-    % trajs_conc = [trajs_conc tracklong];
-    % clear tracklong
+  
 
-
-    load('trajsf_TrCer_1000_26_fullg_tracers.mat','tracklong')
-    trajs_conc = [trajs_conc tracklong];
-    clear tracklong
-    1
-    load('trajsf_TrCer_1000_27_fullg_tracers.mat','tracklong')
-    trajs_conc = [trajs_conc tracklong];
-    clear tracklong
-    1
-    load('trajsf_TrCer_1000_28_fullg_tracers.mat','tracklong')
-    trajs_conc = [trajs_conc tracklong];
-    clear tracklong
-    2
-    load('trajsf_TrCer_1000_29_fullg_tracers.mat','tracklong')
-    trajs_conc = [trajs_conc tracklong];
-    clear tracklong
-    3
-    load('trajsf_TrCer_1000_30_fullg_tracers.mat','tracklong')
-    trajs_conc = [trajs_conc tracklong];
-    clear tracklong
-    6
-    load('trajsf_TrCer_1000_31_fullg_tracers.mat','tracklong')
-    trajs_conc = [trajs_conc tracklong];
-    clear tracklong
-
-    load('trajsf_TrCer_1000_32_fullg_tracers.mat','tracklong')
-    trajs_conc = [trajs_conc tracklong];
-    clear tracklong
-
-    load('trajsf_TrCer_1000_33_fullg_tracers.mat','tracklong')
-    trajs_conc = [trajs_conc tracklong];
-    clear tracklong
-
-    load('trajsf_TrCer_1000_35_fullg_tracers.mat','tracklong')
-    trajs_conc = [trajs_conc tracklong];
-    clear tracklong
-
-    load('trajsf_TrCer_1000_37_fullg_tracers.mat','tracklong')
-    trajs_conc = [trajs_conc tracklong];
-    clear tracklong
-
-    
-    Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc)==1);
-    
+else
+   load([folderin filesep 'trajsf_TrCer_1000_01_ddt_tracer.mat'],'tracklong')
+   trajs_conc = [trajs_conc tracklong];
+1
+    load([folderin filesep 'trajsf1_TrCer_1000_02_ddt_tracer.mat'],'tracklong1')
+    trajs_conc = [trajs_conc tracklong1];
+2
+    load([folderin filesep 'trajsf2_TrCer_1000_02_ddt_tracer.mat'],'tracklong2')
+    trajs_conc = [trajs_conc tracklong2];
+3
+     load([folderin filesep 'trajsf_TrCer_1000_04_ddt_tracer.mat'],'tracklong')
+     trajs_conc = [trajs_conc tracklong];
 end
+
+Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc)==1);
+
 trajs_conc = trajs_conc(Ine);
 
 %%% compute absolute value of vel and acc
@@ -121,14 +52,15 @@ for i=1:numel(trajs_conc)
 end
 %%%
 
-clear tracklong traj_ddt
+clear tracklong
 trajs_conc_with_mean_field = trajs_conc; 
 
-% try
-% save('traj_conc_tracers_ddt','trajs_conc','-v7.3')
-% catch
-% end
+ try
+ save([folderin filesep 'traj_conc'],'trajs_conc','-v7.3')
+ catch
+ end
 
+ clearvars -except folderin folderout fname Fs mycolormap color3 color1 trajs_conc trajs_conc_with_mean_field
 %% Get Mean Velocity 
 if pi==pi
 for i=1:numel(trajs_conc)
@@ -229,11 +161,11 @@ grid off
 %xlim([-5 5])
 ylim([5e-7 1])
 
-
+stop
 folderout = 'pdfs';
 mkdir(folderout)
-savefig_FC([folderout 'PDF_a'],8,6,'pdf')
-savefig_FC([folderout 'PDF_a'],8,6,'fig')
+savefig_FC([folderout filesep 'PDF_a'],8,6,'pdf')
+savefig_FC([folderout filesep 'PDF_a'],8,6,'fig')
 
 %% Table with moments of distribution
 maketable(pdfA,pdfV,pdfVabs,pdfAabs,folderout)
@@ -364,7 +296,7 @@ try
 save('output_post_processing.mat','Ruu','Raa')
 catch end
 %% Tracer: fit correlation  -- Thomas's 
-addpath(genpath('/Users/fcb/Documents/GitHub/Cheng'));
+addpath(genpath('/Users/fcb/Documents/GitHub/Cheng_old'));
 
 nCorrFitV = 270;
 nCorrFitA = 20;

@@ -2,12 +2,14 @@ clear all;clc;
 
 Fs = 2990;
 
-folderout = '/Volumes/landau1/TrCer_1000/ddt/';
+folderout = '/Users/fcb/Downloads/';
 cd(folderout)
-folderin = '/Volumes/landau1/TrCer_1000/';
+folderin = '/Users/fcb/Downloads/';
 
-fpathT_tracks = [folderin filesep 'data_Tracers' filesep 'ddt' filesep];
-fpathP_tracks = [folderin filesep 'data_Particles' filesep 'ddt' filesep];
+gravity = 'ddt';
+
+fpathT_tracks = [folderin filesep 'tracers' filesep 'ddt' filesep];
+fpathP_tracks = [folderin filesep 'particles' filesep 'ddt' filesep];
 %fpathP_tracks = [folderin filesep 'data_Tracers' filesep 'ddt' filesep];
 fpathP_slipVeloData = [folderout filesep 'slipVeloData'];
 
@@ -19,7 +21,6 @@ color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,
 color5 = [mycolormap(1,:);mycolormap(round((size(mycolormap,1)+1)/4),:);mycolormap(round(2*(size(mycolormap,1)+1)/4),:);mycolormap(round(3*(size(mycolormap,1)+1)/4),:);mycolormap(end,:)];
 
 %% Get slip velocity for different radius
-
 % set the radius range of the 'tracers shell around big particle'
 Rmin = 0;
 %Rmax = 10;
@@ -28,7 +29,7 @@ Rmax_vector = [2:2:10 15:10:80];
 for i=1:12
 
     Rmax = Rmax_vector(i);
-    fpathP_slipVeloData = [fpathP_slipVeloData '_R_' num2str(Rmax) filesep];
+    fpathP_slipVeloData_tmp = [fpathP_slipVeloData filesep 'slipVeloData_R_' num2str(Rmax) filesep];
 
     files_P=dir(fullfile([fpathP_tracks filesep], '*.mat'));
     files_T=dir(fullfile([fpathT_tracks filesep], '*.mat'));
@@ -42,7 +43,7 @@ for i=1:12
         fname_P = nonHiddenFiles_P(partnum).name
         fname_T = nonHiddenFiles_T(partnum).name
         if fname_P(19:20) ~= fname_T(19:20)
-            missmatch!
+            missmatch
         end
 
         load([fpathT_tracks fname_T],'tracklong') % particle's trajectory struct
@@ -52,7 +53,7 @@ for i=1:12
 
         subdirect_out = nonHiddenFiles_P(partnum).name(8:25); % create folder to
         % store all data from each video
-        mkdir([fpathP_slipVeloData filesep subdirect_out])
+        mkdir([fpathP_slipVeloData_tmp filesep subdirect_out])
 
         for k_part = 1:numel(tracklong_particle)
             try
@@ -72,24 +73,28 @@ for i=1:12
 
                 % find terminal state where a ~= 0, set the RelThres to a large value
                 % to include the whole trajectory from the beginning
-                [maxTimeLength, startTime, endTime, ThresErrorTS] = findTimeRange(particle_part.Ay, 1e10);
-                startTime0 = startTime;
-                endTime0 = min(endTime,numel(particle_part.Tf));
+                %[maxTimeLength, startTime, endTime, ThresErrorTS] = findTimeRange(particle_part.Ay, 1e10);
+                %startTime0 = startTime;
+                %endTime0 = min(endTime,numel(particle_part.Tf));
+                startTime0 = 0;
+                endTime0 = numel(particle_part.Tf);
 
                 % returns the vertical particle settling velocity in terminal state
                 %Vpg(kexp,1) = mean(particle_part.Vy(startTime0:endTime0));
 
                 % find the index of neighboring tracers of big particle at each frame
-                neighborIdxAll = neighbor(particle_part,tracer_part,Rmin,Rmax,k_part);
+                neighborIdxAll = neighbor(particle_part,tracer_part,Rmin,Rmax,0);
 
                 % returns the relative slip velocity in cylindrical coordinates
                 % two options are basically the same and give the same results
 
                 slipVelCylind = slipVeloCylindrical_fcb(particle_part,tracer_part,neighborIdxAll,startTime0,endTime0);
+                slipVelCylind(cellfun(@isempty, slipVelCylind)) = []; % delete empty cell members
 
-                save([fpathP_slipVeloData filesep subdirect_out filesep 'slipVelCylind_',num2str(k_part),'.mat'],'neighborIdxAll','slipVelCylind');
+
+                save([fpathP_slipVeloData_tmp filesep subdirect_out filesep 'slipVelCylind_',num2str(k_part),'.mat'],'neighborIdxAll','slipVelCylind');
             catch
-                errors = errors +1;
+               errors = errors +1;
             end
         end
     end
@@ -98,57 +103,83 @@ end
 errors
 %% Average over all tracers in each frame, and for each particle
 
+ files_allRs=dir(fullfile([cd filesep 'slipVeloData' filesep])); % have to change slipvelodata by slipvelodata_R_XXX
+ nonHiddenFolders_allRs = files_allRs(~startsWith({files_allRs.name}, '.'));
 
-files=dir(fullfile([cd filesep 'slipVeloData'])); % have to change slipvelodata by slipvelodata_R_XXX
-nonHiddenFolders = files(~startsWith({files.name}, '.'));
+for i=1:numel(nonHiddenFolders_allRs)
+    
+    files=dir(fullfile([cd filesep 'slipVeloData' filesep nonHiddenFolders_allRs(i).name filesep])); % have to change slipvelodata by slipvelodata_R_XXX
+    nonHiddenFolders = files(~startsWith({files.name}, '.'));
+    fpathP_slipVeloData_tmp = [fpathP_slipVeloData filesep nonHiddenFolders_allRs(i).name filesep];
 
-AverSlipVelCylind_conc = [];
-errors2 = 0;
-for j=1:numel(nonHiddenFolders)
+    AverSlipVelCylind_conc = [];
+    errors2 = 0;
+    for j=1:numel(nonHiddenFolders)
 
-    j/numel(nonHiddenFolders)
+        j/numel(nonHiddenFolders)
 
-    files=dir(fullfile([cd filesep 'slipVeloData' filesep nonHiddenFolders(j).name filesep], '*.mat'));
-    nonHiddenFiles = files(~startsWith({files.name}, '.'));
+        files=dir(fullfile([cd filesep 'slipVeloData' filesep nonHiddenFolders_allRs(i).name filesep nonHiddenFolders(j).name filesep], '*.mat'));
+        nonHiddenFiles = files(~startsWith({files.name}, '.'));
 
-    for partnum = 1:numel(nonHiddenFiles)
+        for partnum = 1:numel(nonHiddenFiles)
 
-        load([folderout filesep 'slipVeloData' filesep nonHiddenFolders(j).name filesep 'slipVelCylind_' num2str(partnum) '.mat'],'slipVelCylind')
-        try
-            tstart = slipVelCylind{1}(1).t;
-            tend = slipVelCylind{end}(1).t;
+            try
+            load([folderout filesep 'slipVeloData' filesep nonHiddenFolders_allRs(i).name filesep nonHiddenFolders(j).name filesep 'slipVelCylind_' num2str(partnum) '.mat'],'slipVelCylind')
+            
+                slipVelCylind(cellfun(@isempty, slipVelCylind)) = []; % delete empty cell members
+                tstart = slipVelCylind{1}(1).t;
+                tend = slipVelCylind{end}(1).t;
 
-            AverSlipVelCylind = [];
-            for t=tstart:tend
-                AverSlipVelCylind(t).rho = mean([slipVelCylind{t}(1:end).rho]);
-                AverSlipVelCylind(t).theta = mean([slipVelCylind{t}(1:end).theta]);
-                AverSlipVelCylind(t).z = mean([slipVelCylind{t}(1:end).z]);
-                vertvel = vertcat(slipVelCylind{t}(1:end).Urel);
-                AverSlipVelCylind(t).Urelmean_vert = mean(vertvel(:,2));
-                AverSlipVelCylind(t).Urelstd_vert = std(vertvel(:,2));
-                AverSlipVelCylind(t).Urelmean = mean(vertcat(slipVelCylind{t}(1:end).Urel));
-                AverSlipVelCylind(t).Urelstd = std(vertcat(slipVelCylind{t}(1:end).Urel));
-                AverSlipVelCylind(t).Urel = vertcat(slipVelCylind{t}(1:end).Urel);
-                AverSlipVelCylind(t).t = mean([slipVelCylind{t}(1:end).t]);
+                AverSlipVelCylind = [];
+                %for t=tstart:tend
+                for t=1:numel(slipVelCylind)
+                    AverSlipVelCylind(t).rho = mean([slipVelCylind{t}(1:end).rho]);
+                    AverSlipVelCylind(t).theta = mean([slipVelCylind{t}(1:end).theta]);
+                    AverSlipVelCylind(t).z = mean([slipVelCylind{t}(1:end).z]);
+                    vertvel = vertcat(slipVelCylind{t}(1:end).Urel);
+                    AverSlipVelCylind(t).Urelmean_vert = mean(vertvel(:,2));
+                    AverSlipVelCylind(t).Urelstd_vert = std(vertvel(:,2));
+                    AverSlipVelCylind(t).Urelmean = mean(vertcat(slipVelCylind{t}(1:end).Urel));
+                    AverSlipVelCylind(t).Urelstd = std(vertcat(slipVelCylind{t}(1:end).Urel));
+                    AverSlipVelCylind(t).Urel = vertcat(slipVelCylind{t}(1:end).Urel);
+                    AverSlipVelCylind(t).t = mean([slipVelCylind{t}(1:end).t]);
+                end
+
+
+            % concatenation
+            AverSlipVelCylind_conc = [AverSlipVelCylind_conc AverSlipVelCylind];
+
+                        catch
+                errors2 = errors2 + 1;
             end
-        catch
-            errors2 = errors2 + 1;
+           % save([fpathP_slipVeloData_tmp filesep nonHiddenFolders(j).name filesep 'average' 'slipVelCylind_' nonHiddenFiles(j).name(end-4:end-3) '.mat'],'AverSlipVelCylind');
         end
 
-        % concatenation
-        AverSlipVelCylind_conc = [AverSlipVelCylind_conc AverSlipVelCylind];
-
-        save([fpathP_slipVeloData filesep nonHiddenFolders(j).name filesep 'slipVelCylind_',num2str(partnum),'.mat'],'AverSlipVelCylind','-append');
     end
+    save([folderout filesep 'slipVeloData' filesep nonHiddenFolders_allRs(i).name filesep 'slipVelCylind_' gravity '_CONC.mat'],'AverSlipVelCylind_conc');
+    errors2
+end
+
+%% Plot Urel versus each Radius
+
+files_allRs=dir(fullfile([cd filesep 'slipVeloData' filesep])); % have to change slipvelodata by slipvelodata_R_XXX
+nonHiddenFolders_allRs = files_allRs(~startsWith({files_allRs.name}, '.'));
+
+for k = 1:numel(nonHiddenFolders_allRs)
+
+    load([nonHiddenFolders_allRs(k).folder filesep nonHiddenFolders_allRs(k).name filesep 'slipVelCylind_ddt_CONC.mat'])
+    
+    scatter(mean([AverSlipVelCylind_conc.rho]), mean([AverSlipVelCylind_conc.Urelmean_vert]),'ro');hold on
 
 end
-save([folderout filesep 'slipVelCylind_CONC.mat'],'AverSlipVelCylind_conc');
-errors2
+
+
+
 %% Plot distributions of slip velocity with each tracer versus r
 
-% load('/Volumes/landau1/TrCer_1000/15_test/particle/tracks/tracks_1.mat','tracklong')
+% load('/Users/fcb/AuxFiles/exports/15_test/particle/tracks/tracks_1.mat','tracklong')
 % tracklong=tracklong(1);
-load('/Volumes/landau1/TrCer_1000/15_test/slipVeloData/slipVelCylind_1.mat','slipVelCylind')
+load('/Users/fcb/Downloads/slipVeloData/slipVeloData_R_2/TrCer_1000_09_ddt_/slipVelCylind_1.mat','slipVelCylind')
 
 tstart = slipVelCylind{1}(1).t;
 tend = slipVelCylind{end}(1).t;
@@ -181,7 +212,7 @@ end
 save([folderout filesep 'tracklongP_conc'],'tracklongP_conc','-v7.3')
 
 %% Tracking video
-if 1==pi
+if pi==pi
 
     kexp = 1;
     trajlen = 100;

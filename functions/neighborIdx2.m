@@ -56,7 +56,8 @@ function [neighborIdxAll] = neighborIdx2(particle_part, tracer_part, idx1, idx2,
 
     rv = particle.vx * rpt.x + particle.vy * rpt.y + particle.vz * rpt.z;
     neighborIdxAll.idxfront = neighborIdxAll.idx(rv > 0);
-    neighborIdxAll.idxback = neighborIdxAll.idx(rv < 0);
+    %neighborIdxAll.idxback = neighborIdxAll.idx(rv < 0);
+    disp('dont save Idx back')
 end
 
 

@@ -1,55 +1,405 @@
 %% Definitions
-clc
+clfc
 
 addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence/'));
 
-folderout = '/Volumes/landau1/TrCer_1000/joint_plots';
+folderout = '/Volumes/landau1/TrCer_analysis_paper#1/slipVel/';
+mkdir(folderout)
 cd(folderout)
 
-folder_ddt = '/Volumes/landau1/TrCer_1000/ddt';
-folder_fullg = '/Volumes/landau1/TrCer_1000/fullg';
-folder_dec = '/Volumes/landau1/TrCer_1000/dec';
+%folder_ddt = '/Volumes/landau1/TrCer_analysis_paper#1/exports/ddt_pairs/';
+%folder_fullg = '/Volumes/landau1/TrCer_analysis_paper#1/exports/fullg_pairs/';
+%folder_dec = '';
 
 %%% Load slip velocities for fullg-ddt-dec
 
-load([folder_ddt filesep 'slipVelCylind_CONC.mat'],'AverSlipVelCylind_conc');
-AverSlipVelCylind_conc_ddt = AverSlipVelCylind_conc;
+load('/Volumes/landau1/TrCer_analysis_paper#1/exports/slipVeloData/slipVeloData_R_10/slipVelCylind_ddt_CONC.mat','AverSlipVelCylind_conc');
+AverSlipVelCylind_conc_ddt_R6 = AverSlipVelCylind_conc; clear AverSlipVelCylind_conc
 
-load([folder_fullg filesep 'slipVelCylind_CONC.mat'],'AverSlipVelCylind_conc');
-AverSlipVelCylind_conc_fullg = AverSlipVelCylind_conc;
+load('/Volumes/landau1/TrCer_analysis_paper#1/exports/slipVeloData/slipVeloData_R_10/slipVelCylind_fullg_CONC.mat','AverSlipVelCylind_conc');
+AverSlipVelCylind_conc_fullg_R6 = AverSlipVelCylind_conc; clear AverSlipVelCylind_conc
 
-% load([folder_dec filesep 'slipVelCylind_CONC.mat'],'AverSlipVelCylind_conc');
-% AverSlipVelCylind_conc_dec = AverSlipVelCylind_conc;
 
 %%% Load particle velocities
 
 % no turbulence case
-load('/Volumes/landau1/TrCer_1000/noturb/trajs_TrCer_1000_noturb.mat')
+load('/Volumes/landau1/TrCer_analysis_paper#1/noturb/trajs_TrCer_1000_noturb.mat')
 tracklong_noturb = tracklong; clear tracklong
+Ine=find(arrayfun(@(X)(~isempty(X.Vx)),tracklong_noturb)==1);
+tracklong_noturb = tracklong_noturb(Ine);
 
 % Fullg particles
-load('/Volumes/landau1/TrCer_1000/fullg/tracklongP_conc.mat')
-tracklong_fullg = tracklongP_conc; clear tracklongP_conc
+load('/Volumes/landau1/TrCer_analysis_paper#1/exports/particles/fullg/trajsf_TrCer_1000_01_fullg_particle.mat')
+tracklong_fullg = tracklong; clear tracklong
+Ine=find(arrayfun(@(X)(~isempty(X.Vx)),tracklong_fullg)==1);
+tracklong_fullg = tracklong_fullg(Ine);
 
 % DDT particles
-load('/Volumes/landau1/TrCer_1000/ddt/tracklongP_conc.mat')
-tracklong_ddt = tracklongP_conc; clear tracklongP_conc
+load('/Volumes/landau1/TrCer_analysis_paper#1/exports/particles/ddt/trajsf_TrCer_1000_01_ddt_particle.mat')
+tracklong_ddt = tracklong; clear tracklong
+Ine=find(arrayfun(@(X)(~isempty(X.Vx)),tracklong_ddt)==1);
+tracklong_ddt = tracklong_ddt(Ine);
 
-% % Dec particles
+% Dec particles
 % load('/Volumes/landau1/TrCer_1000/dec/tracklongP_conc.mat')
-% tracklong_dec = tracklongP_conc; clear tracklongP_conc
+% tracklong_dec = tracklong; clear tracklong
+
+
+%% Substract Mean Flow
+clc
+load('/Volumes/landau1/TrCer_analysis_paper#1/analysis_tracers/fullg/MeanFlow_Interpolant.mat')
+Fx_fullg = Fx;
+Fy_fullg = Fy;
+Fz_fullg = Fz;
+
+for i=1:numel(tracklong_fullg)
+
+    MeanVel_x = Fx_fullg(tracklong_fullg(i).Xf,tracklong_fullg(i).Yf,tracklong_fullg(i).Zf);
+    MeanVel_y = Fy_fullg(tracklong_fullg(i).Xf,tracklong_fullg(i).Yf,tracklong_fullg(i).Zf);
+    MeanVel_z = Fz_fullg(tracklong_fullg(i).Xf,tracklong_fullg(i).Yf,tracklong_fullg(i).Zf);
+
+    tracklong_fullg(i).Vx_minus_meanflow = tracklong_fullg(i).Vx - MeanVel_x;
+    tracklong_fullg(i).Vy_minus_meanflow = tracklong_fullg(i).Vy - MeanVel_y;
+    tracklong_fullg(i).Vz_minus_meanflow = tracklong_fullg(i).Vz - MeanVel_z;
+
+
+    clear MeanVel_x MeanVel_y MeanVel_z
+end
+
+
+load('/Volumes/landau1/TrCer_analysis_paper#1/analysis_tracers/ddt/MeanFlow_Interpolant.mat')
+Fx_ddt = Fx;
+Fy_ddt = Fy;
+Fz_ddt = Fz; clear Fx Fy Fz
+
+for i=1:numel(tracklong_ddt)
+
+    MeanVel_x = Fx_ddt(tracklong_ddt(i).Xf,tracklong_ddt(i).Yf,tracklong_ddt(i).Zf);
+    MeanVel_y = Fy_ddt(tracklong_ddt(i).Xf,tracklong_ddt(i).Yf,tracklong_ddt(i).Zf);
+    MeanVel_z = Fz_ddt(tracklong_ddt(i).Xf,tracklong_ddt(i).Yf,tracklong_ddt(i).Zf);
+
+    tracklong_ddt(i).Vx_minus_meanflow = tracklong_ddt(i).Vx - MeanVel_x;
+    tracklong_ddt(i).Vy_minus_meanflow = tracklong_ddt(i).Vy - MeanVel_y;
+    tracklong_ddt(i).Vz_minus_meanflow = tracklong_ddt(i).Vz - MeanVel_z;
+
+    clear MeanVel_x MeanVel_y MeanVel_z
+end
+
+%%%%%% DEC %%%%%%%%
+if 1==pi
+    %load('/Volumes/landau1/Tracers/dec_13-14-15-16/MeanFlow_Interpolant.mat')
+    load('/Volumes/landau1/Tracers/fullg_13-14-15-16/MeanFlow_Interpolant.mat') % I do not have data for tracers in dec so I use fullg 3-25-24
+    Fx_ddt = Fx;
+    Fy_ddt = Fy;
+    Fz_ddt = Fz; clear Fx Fy Fz
+
+    for i=1:numel(tracklong_dec)
+
+        MeanVel_x = Fx_ddt(tracklong_dec(i).Xf,tracklong_dec(i).Yf,tracklong_dec(i).Zf);
+        MeanVel_y = Fy_ddt(tracklong_dec(i).Xf,tracklong_dec(i).Yf,tracklong_dec(i).Zf);
+        MeanVel_z = Fz_ddt(tracklong_dec(i).Xf,tracklong_dec(i).Yf,tracklong_dec(i).Zf);
+
+        tracklong_dec(i).Vx_minus_meanflow = tracklong_dec(i).Vx - MeanVel_x;
+        tracklong_dec(i).Vy_minus_meanflow = tracklong_dec(i).Vy - MeanVel_y;
+        tracklong_dec(i).Vz_minus_meanflow = tracklong_dec(i).Vz - MeanVel_z;
+
+        clear MeanVel_x MeanVel_y MeanVel_z
+    end
+end
+% get rid of NaN mean vels
+
+tracklong_ddt = tracklong_ddt(~arrayfun(@(x) any(isnan(x.Vy_minus_meanflow)), tracklong_ddt));
+
+tracklong_fullg = tracklong_fullg(~arrayfun(@(x) any(isnan(x.Vy_minus_meanflow)), tracklong_fullg));
+
+%tracklong_dec = tracklong_dec(~arrayfun(@(x) any(isnan(x.Vy_minus_meanflow)), tracklong_dec));
+
+% compute distributions
+pdf_Vvert_minus_meanflow(1) = mkpdf5(tracklong_fullg,'Vy_minus_meanflow',100,10);
+pdf_Vvert_minus_meanflow(2) = mkpdf5(tracklong_ddt,'Vy_minus_meanflow',100,10);
+%pdf_Vvert_minus_meanflow(3) = mkpdf5(tracklong_dec,'Vy_minus_meanflow',100,10);
+pdfV(1) = mkpdf5(tracklong_fullg,'Vy',100,10);
+pdfV(2) = mkpdf5(tracklong_ddt,'Vy',100,10);
+%pdfV(3) = mkpdf5(tracklong_dec,'Vy',100,10);
+
+%% Vertical velocity versus time bin
+
+figure(1); clf; hold on; grid on; box on
+
+%%% Fullg
+tbins_fullg = (0:.5:4);
+vels_in_each_bin = cell(1, length(tbins_fullg)-1);
+meanvel_in_each_bin = zeros(1, length(tbins_fullg)-1);
+
+meanVy = cell(1, length(tbins_fullg)-1);
+countVy = cell(1, length(tbins_fullg)-1);
+
+Vtbins_fullg = cell(1, length(tbins_fullg)-1);
+
+for i = 1:numel(tracklong_fullg)
+    %%%%% Quantity to plot
+    Yf = tracklong_fullg(i).Tf;
+    %  Vy = tracklong_fullg(i).Vy_minus_meanflow;
+    Vy = tracklong_fullg(i).Vy;
+    %%%%%
+
+    [~, binIdx] = histc(Yf, tbins_fullg);
+
+    binIdx(binIdx == 0) = 1;
+    binIdx(binIdx == length(tbins_fullg)) = length(tbins_fullg) - 1;
+
+    for j = 1:length(tbins_fullg)-1
+        %%%% Decide if removing mean vel or not.
+        Vtbins_fullg{j} = [Vtbins_fullg{j}; Vy(binIdx == j)];
+        %%%%
+    end
+end
+
+for j = 1:length(tbins_fullg)-1
+    meanVy{j} = mean(Vtbins_fullg{j});
+    countVy{j} = numel(Vtbins_fullg{j});
+end
+
+meanVy_fullg = cell2mat(meanVy);
+countVy_fullg = cell2mat(countVy);
+
+
+%%% DDT
+tbins_ddt = (0:0.5:4);
+vels_in_each_bin = cell(1, length(tbins_ddt)-1);
+meanvel_in_each_bin = zeros(1, length(tbins_ddt)-1);
+
+meanVy = cell(1, length(tbins_ddt)-1);
+countVy = cell(1, length(tbins_ddt)-1);
+
+Vtbins_ddt = cell(1, length(tbins_ddt)-1);
+
+for i = 1:numel(tracklong_ddt)
+    %%%%% Quantity to plot
+    Yf = tracklong_ddt(i).Tf;
+    % Vy = tracklong_ddt(i).Vy_minus_meanflow;
+    Vy = tracklong_ddt(i).Vy;
+    %%%%%
+
+    [~, binIdx] = histc(Yf, tbins_ddt);
+
+    binIdx(binIdx == 0) = 1;
+    binIdx(binIdx == length(tbins_ddt)) = length(tbins_ddt) - 1;
+
+    for j = 1:length(tbins_ddt)-1
+        %%%% Decide if removing mean vel or not.
+        Vtbins_ddt{j} = [Vtbins_ddt{j}; Vy(binIdx == j)];
+        %%%%
+    end
+end
+
+for j = 1:length(tbins_ddt)-1
+    meanVy{j} = mean(Vtbins_ddt{j});
+    countVy{j} = numel(Vtbins_ddt{j});
+end
+
+meanVy_ddt = cell2mat(meanVy);
+countVy_ddt = cell2mat(countVy);
+
+if 1==pi
+    %%% DEC
+    tbins_dec = (0:0.5:4);
+    vels_in_each_bin = cell(1, length(tbins_dec)-1);
+    meanvel_in_each_bin = zeros(1, length(tbins_dec)-1);
+
+    meanVy = cell(1, length(tbins_dec)-1);
+    countVy = cell(1, length(tbins_dec)-1);
+
+    Vtbins_dec = cell(1, length(tbins_dec)-1);
+
+    for i = 1:numel(tracklong_dec)
+        %%%%% Quantity to plot
+        Yf = tracklong_dec(i).Tf;
+        Vy = tracklong_dec(i).Vy_minus_meanflow;
+        %Vy = tracklong_dec(i).Vy;
+        %%%%%
+
+        [~, binIdx] = histc(Yf, tbins_dec);
+
+        binIdx(binIdx == 0) = 1;
+        binIdx(binIdx == length(tbins_dec)) = length(tbins_dec) - 1;
+
+        for j = 1:length(tbins_dec)-1
+            %%%% Decide if removing mean vel or not.
+            Vtbins_dec{j} = [Vtbins_dec{j}; Vy(binIdx == j)];
+            %%%%
+        end
+    end
+
+    for j = 1:length(tbins_dec)-1
+        meanVy{j} = mean(Vtbins_dec{j});
+        countVy{j} = numel(Vtbins_dec{j});
+    end
+
+    meanVy_dec = cell2mat(meanVy);
+    countVy_dec = cell2mat(countVy);
+end
+
+% plot
+video = VideoWriter('vel_vs_time','MPEG-4');
+video.FrameRate = 3e-1;
+open(video);
+
+savefig_FC('vertical_vel_versus_time',8,6,'pdf')
+xlabel('t (sec)');
+ylabel('Mean Vert Vel (mm/s)');
+title('Mean Value of Vert. Vel. minus Mean Flow');
+xlim([-0.5 5])
+
+% Initialize the loop
+for i = 1:length(tbins_fullg)-1
+    % Update the plot with new data
+
+    bar(tbins_fullg(i), meanVy_fullg(i),0.4,'r','FaceAlpha', 0.8,'EdgeColor', 'k', 'LineWidth', 1);
+    hold on;
+
+    % Pause for a short duration to visualize the progression
+    pause(.1);
+
+    % Use drawnow to update the plot immediately
+    drawnow;
+
+    % Write the current frame to the video
+    frame = getframe(gcf);
+    writeVideo(video, frame);
+
+    % Duplicate frames to simulate a lower frame rate
+    % for j = 1:10
+    %     % Write the current frame to the video
+    %     frame = getframe(gcf);
+    %     writeVideo(video, frame);
+    % end
+end
+
+for i = 1:length(tbins_ddt)-1
+    % Update the plot with new data
+
+    nan_indices1 = find(isnan(meanVy_fullg));
+    bar(tbins_ddt(i)+tbins_fullg(nan_indices1(1)), meanVy_ddt(i),0.4,'g','FaceAlpha', 0.8,'EdgeColor', 'k', 'LineWidth', 1);
+    hold on;
+
+    % Pause for a short duration to visualize the progression
+    pause(0.1);
+
+    % Use drawnow to update the plot immediately
+    drawnow;
+
+    % Write the current frame to the video
+    frame = getframe(gcf);
+    writeVideo(video, frame);
+end
+
+%%%%%%%%%% DEC %%%%%%%%%%
+if 1==pi
+    for i = 1:length(tbins_dec)-1
+        % Update the plot with new data
+    
+        nan_indices2 = find(isnan(meanVy_ddt));
+        bar(tbins_dec(i)+tbins_fullg(nan_indices1(1))+tbins_ddt(nan_indices2(1)), meanVy_dec(i),0.4,'b','FaceAlpha', 0.8,'EdgeColor', 'k', 'LineWidth', 1);
+        % Pause for a short duration to visualize the progression
+    
+        pause(0.1);
+    
+        % Use drawnow to update the plot immediately
+        drawnow;
+    
+        % Write the current frame to the video
+        frame = getframe(gcf);
+        writeVideo(video, frame);
+    end
+end
+close(video)
+
+savefig_FC('vertical_vel_versus_time',8,6,'pdf')
+savefig_FC('vertical_vel_versus_time',8,6,'fig')
+
+%% Plot
+figure(10);clf
+
+%%% fullg-ddt-dec particle settling velocity
+mean2 = pdfV(1).mean;
+%mean2 = mean(vertcat(tracklong_fullg.Vy_minus_meanflow));
+h1=yline(mean2,'m',LineWidth=3);
+
+mean2= pdfV(2).mean;
+h2=yline(mean2,'c',LineWidth=3);
+
+%%% fullg-ddt-dec particle settling velocity minus mean flow
+mean2 = pdf_Vvert_minus_meanflow(1).mean;
+h3=yline(mean2,'-.m',LineWidth=3);
+
+mean2= pdf_Vvert_minus_meanflow(2).mean;
+h4=yline(mean2,'-.c',LineWidth=3);
+
+%%% plot no turb vel
+h5=yline(mean(vertcat(tracklong_noturb.Vy)),'k',LineWidth=3);
+
+ylabel('Vertical Velocity (mm/s)',FontWeight='bold')
+box on; grid on
+legend([h1 h2 h3 h4 h5],'FULLG','DDT','FULLG MINUS MEANFIELD','DDT MINUS MEANFIELD','No Turbulence - full g','interpreter','latex',Location='northeast');
+
+
+folderout_tmp = 'vels_raw_minusmeanfield';
+mkdir(folderout_tmp)
+savefig_FC([folderout_tmp filesep 'meanvel'],8,6,'pdf')
+savefig_FC([folderout_tmp filesep 'meanvel'],8,6,'fig')
+
+%% Regions that particles explore.
+
+for i=1:numel(tracklong_fullg)
+
+    pos_tmp = [tracklong_fullg(i).Xf,tracklong_fullg(i).Yf,tracklong_fullg(i).Zf];
+    tracklong_fullg(i).r = sqrt(sum(pos_tmp.^2, 2));
+
+end
+
+
+for i=1:numel(tracklong_ddt)
+
+    pos_tmp = [tracklong_ddt(i).Xf,tracklong_ddt(i).Yf,tracklong_ddt(i).Zf];
+    tracklong_ddt(i).r = sqrt(sum(pos_tmp.^2, 2));
+
+end
+
+
+%%%%%%%%%%%%%%%% plot
+figure(11);clf
+
+scatter3(vertcat(tracklong_fullg.Xf),vertcat(tracklong_fullg.Yf),vertcat(tracklong_fullg.Zf),'bo','filled'); hold on
+scatter3(vertcat(tracklong_ddt.Xf),vertcat(tracklong_ddt.Yf),vertcat(tracklong_ddt.Zf),'mo','filled')
+
+ylabel('Vertical (mm)',FontWeight='bold')
+zlabel('Z (mm)',FontWeight='bold')
+xlabel('X (mm)',FontWeight='bold')
+box on; grid on
+legend('FULLG','DDT','interpreter','latex',Location='northeast');
+
+folderout_tmp = 'traj3D';
+mkdir(folderout_tmp)
+savefig_FC([folderout_tmp filesep 'traj3D'],8,6,'pdf')
+savefig_FC([folderout_tmp filesep 'traj3D'],8,6,'fig')
+
+
 
 %% PDFs
 
-%load([folderout filesep 'tracklongP_conc'],'tracklongP_conc')
-%tracklong=tracklongP_conc; clear tracklongP_conc
+%%% Create variable with velocity to use mkpdf5
+for j=1:numel(AverSlipVelCylind_conc_fullg_R6)
+    AverSlipVelCylind_conc_fullg_R6(j).VerticalVel = AverSlipVelCylind_conc_fullg_R6(j).Urel(:,2);
+end
+for j=1:numel(AverSlipVelCylind_conc_ddt_R6)
+    AverSlipVelCylind_conc_ddt_R6(j).VerticalVel = AverSlipVelCylind_conc_ddt_R6(j).Urel(:,2);
+end
 
-%pdfV(2) = mkpdf5(tracklong,'Vy',256,10);
-%pdfV(2) = mkpdf5(tracklong,'Vy',100,5);
 
-pdfSV(1) = mkpdf5(AverSlipVelCylind_conc_fullg,'Urelmean_vert',100,10);
+pdfSV(1) = mkpdf5(AverSlipVelCylind_conc_fullg_R6,'VerticalVel',100,10);
 1
-pdfSV(2) = mkpdf5(AverSlipVelCylind_conc_ddt,'Urelmean_vert',100,10);
+pdfSV(2) = mkpdf5(AverSlipVelCylind_conc_ddt_R6,'VerticalVel',100,10);
 2
 %pdfSV(3) = mkpdf5(AverSlipVelCylind_conc_dec,'Urelmean_vert',100,5);
 %3
@@ -58,19 +408,25 @@ pdfV(1) = mkpdf5(tracklong_fullg,'Vy',100,10);
 pdfV(2) = mkpdf5(tracklong_ddt,'Vy',100,10);
 %pdfV(3) = mkpdf5(tracklong_dec,'Vy',100,10);
 
+
+
+
 %% Plot PDFs
 
 figure(1); hold on; clf
 
-%%% plot slip vel
-semilogy(pdfSV(1).xpdf,pdfSV(1).pdf,'r-o',MarkerSize=5,LineWidth=2);hold on
-xline(pdfSV(1).mean,'r',LineWidth=3)
+if pi==pi %dont have that data yet
 
-semilogy(pdfSV(2).xpdf,pdfSV(2).pdf,'g-o',MarkerSize=5,LineWidth=2);
-xline(pdfSV(2).mean,'g',LineWidth=3)
+    %%% plot slip vel
+    semilogy(pdfSV(1).xpdf,pdfSV(1).pdf,'r-o',MarkerSize=5,LineWidth=2);hold on
+    xline(pdfSV(1).mean,'r',LineWidth=3)
 
-% semilogy(pdfSV(3).xpdf,pdfSV(3).pdf,'b-o',MarkerSize=5,LineWidth=2);
-% xline(pdfSV(3).mean,'b',LineWidth=3)
+    semilogy(pdfSV(2).xpdf,pdfSV(2).pdf,'g-o',MarkerSize=5,LineWidth=2);
+    xline(pdfSV(2).mean,'g',LineWidth=3)
+
+    % semilogy(pdfSV(3).xpdf,pdfSV(3).pdf,'b-o',MarkerSize=5,LineWidth=2);
+    % xline(pdfSV(3).mean,'b',LineWidth=3)
+end
 
 %%% plot particle vel
 semilogy(pdfV(1).xpdf,pdfV(1).pdf,'m-o',MarkerSize=5,LineWidth=2);hold on
@@ -105,25 +461,27 @@ savefig_FC([folderout_tmp filesep 'PDF_v'],8,6,'fig')
 
 figure(2);hold on; clf
 
-%%% fullg-ddt-dec slip settling velocity
-mean2 = pdfSV(1).mean;
-std = pdfSV(1).std/2;
-yline(mean2,'r',LineWidth=3)
-% vertices = [0, mean2-std; 1, mean2-std; 1, mean2+std; 0, mean2+std];
-% patch('Vertices', vertices, 'Faces', [1 2 3 4],'EdgeColor','none', 'FaceColor', 'r', 'FaceAlpha', 0.2, 'LineWidth', 2);
+if pi==pi %dont have that data yet
 
-mean2 = pdfSV(2).mean;
-std = pdfSV(2).std/2;
-yline(mean2,'g',LineWidth=3)
-% vertices = [0, mean2-std; 1, mean2-std; 1, mean2+std; 0, mean2+std];
-% patch('Vertices', vertices, 'Faces', [1 2 3 4],'EdgeColor','none', 'FaceColor', 'g', 'FaceAlpha', 0.2, 'LineWidth', 2);
+    %%% fullg-ddt-dec slip settling velocity
+    mean2 = pdfSV(1).mean;
+    std = pdfSV(1).std/2;
+    yline(mean2,'r',LineWidth=3)
+    % vertices = [0, mean2-std; 1, mean2-std; 1, mean2+std; 0, mean2+std];
+    % patch('Vertices', vertices, 'Faces', [1 2 3 4],'EdgeColor','none', 'FaceColor', 'r', 'FaceAlpha', 0.2, 'LineWidth', 2);
 
-% mean = pdfSV(3).mean2;
-% std = pdfSV(3).std2/2;
-% yline(mean,'b',LineWidth=3)
-% vertices = [0, mean2-std; 1, mean2-std; 1, mean2+std; 0, mean2+std];
-% patch('Vertices', vertices, 'Faces', [1 2 3 4],'EdgeColor','none', 'FaceColor', 'b', 'FaceAlpha', 0.2, 'LineWidth', 2);
+    mean2 = pdfSV(2).mean;
+    std = pdfSV(2).std/2;
+    yline(mean2,'g',LineWidth=3)
+    % vertices = [0, mean2-std; 1, mean2-std; 1, mean2+std; 0, mean2+std];
+    % patch('Vertices', vertices, 'Faces', [1 2 3 4],'EdgeColor','none', 'FaceColor', 'g', 'FaceAlpha', 0.2, 'LineWidth', 2);
 
+    % mean = pdfSV(3).mean2;
+    % std = pdfSV(3).std2/2;
+    % yline(mean,'b',LineWidth=3)
+    % vertices = [0, mean2-std; 1, mean2-std; 1, mean2+std; 0, mean2+std];
+    % patch('Vertices', vertices, 'Faces', [1 2 3 4],'EdgeColor','none', 'FaceColor', 'b', 'FaceAlpha', 0.2, 'LineWidth', 2);
+end
 %%% fullg-ddt-dec particle settling velocity
 mean2 = pdfV(1).mean;
 std = pdfV(1).std/2;
@@ -147,17 +505,18 @@ yline(mean2,'c',LineWidth=3)
 yline(mean(vertcat(tracklong_noturb.Vy)),'k',LineWidth=3)
 
 
-%legend('$SlipV-FULLG$','$SlipV-DDT$','$SlipV-DEC$','FULLG','DDT','DEC','No Turbulence - full g','interpreter','latex',Location='northeast');
-%ylabel('$PDF(\frac{V-\langle V \rangle}{std(V)})$','interpreter','latex',FontWeight='bold')
+legend('$SlipV-FULLG$','$SlipV-DDT$','$SlipV-DEC$','FULLG','DDT','DEC','No Turbulence - full g','interpreter','latex',Location='northeast');
+ylabel('$PDF(\frac{V-\langle V \rangle}{std(V)})$','interpreter','latex',FontWeight='bold')
 ylabel('Vertical Velocity (mm/s)',FontWeight='bold')
 box on; grid on
+
 
 folderout_tmp = 'meanvels';
 mkdir(folderout_tmp)
 savefig_FC([folderout_tmp filesep 'meanvel'],8,6,'pdf')
 savefig_FC([folderout_tmp filesep 'meanvel'],8,6,'fig')
 
-%% Compare PDF shapes - plot normlized distributions
+%% Compare PDF shapes - plot normalized distributions
 
 figure(3); hold on; clf
 
@@ -188,6 +547,59 @@ axis padded
 
 savefig_FC([folderout_tmp filesep 'PDF_comparison'],8,6,'pdf')
 savefig_FC([folderout_tmp filesep 'PDF_comparison'],8,6,'fig')
+
+%%
+figure(4);clf;clc
+
+Rtmp = [2 4 6 10 15:10:75];
+for i=1:11
+    i/11
+
+    try
+        % fullg
+        load(['/Volumes/landau1/TrCer_1000/fullg/slipVeloData/slipVeloData_R_' num2str(Rtmp(i)) '/slipVelCylind_CONC.mat'],'AverSlipVelCylind_conc');
+        for j=1:numel(AverSlipVelCylind_conc) % add new field to use mkfpdf5
+            AverSlipVelCylind_conc(j).VerticalVel = AverSlipVelCylind_conc(j).Urel(:,2);
+        end
+
+        pdfSV_tmp = mkpdf5(AverSlipVelCylind_conc,'VerticalVel',100,10);
+        scatter(Rtmp(i),pdfSV_tmp.mean,200,'ro','filled'); hold on
+        % ddt
+        load(['/Volumes/landau1/TrCer_1000/ddt/slipVeloData/slipVeloData_R_' num2str(Rtmp(i)) '/slipVelCylind_CONC.mat'],'AverSlipVelCylind_conc');
+        for j=1:numel(AverSlipVelCylind_conc) % add new field to use mkfpdf5
+            AverSlipVelCylind_conc(j).VerticalVel = AverSlipVelCylind_conc(j).Urel(:,2);
+        end
+
+        pdfSV_tmp = mkpdf5(AverSlipVelCylind_conc,'VerticalVel',100,10);
+        scatter(Rtmp(i),pdfSV_tmp.mean,200,'gpentagram','filled'); hold on
+    catch end
+
+end
+
+% Particles' raw velocity
+pdfV(1) = mkpdf5(tracklong_fullg,'Vy',100,10);
+pdfV(2) = mkpdf5(tracklong_ddt,'Vy',100,10);
+% fullg
+mean2 = pdfV(1).mean;
+yline(mean2,'m',LineWidth=3)
+% ddt
+mean2= pdfV(2).mean;
+yline(mean2,'c',LineWidth=3)
+
+% no turb
+yline(mean(vertcat(tracklong_noturb.Vy)),'k',LineWidth=3)
+
+box on
+xlabel('R')
+ylabel('Vertical Velocity (mm/s)',FontWeight='bold')
+grid on
+
+
+folderout_tmp = 'Different_Rs';
+mkdir(folderout_tmp)
+
+savefig_FC([folderout_tmp filesep 'vel_vs_R'],8,6,'pdf')
+savefig_FC([folderout_tmp filesep 'vel_vs_R'],8,6,'fig')
 %% PLOTS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
