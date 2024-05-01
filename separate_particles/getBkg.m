@@ -3,7 +3,10 @@ function bkg = getBkg(subfolders,fname_prefix,Istart,Iend,increment,demosaicpatt
 
 fname = [subfolders filesep fname_prefix filesep 'frame_' num2str(Istart,'%06d') '.tiff' ];
 
+
 Im = imread(fname);%,'ppm','uint16');
+
+
 cc = class(Im);
 if ~isempty(demosaicpattern)
     Im = rgb2gray(demosaic(Im,demosaicpattern));

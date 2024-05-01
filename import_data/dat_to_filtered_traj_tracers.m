@@ -3,14 +3,14 @@ for j=1
 clear;clc;close all
 
 % Set path were functions will be read from
-addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence'));
+addpath(genpath('C:\Users\meatlab1-admin\Documents\facundo\Particle-laden-turbulence'));
 
 realis = [1];
 
 %fname = ['noturb_TrCer_1000_0' num2str(realis(j)) '_dec_particle'];
-fname = 'TrCer_1000_02_ddt_tracer';
+fname = 'TrCer_1000_10_fullg_tracer';
 
-folderin = '/Volumes/landau1/TrCer_analysis_paper#1/exports/ddt_pairs/';
+folderin = 'I:\TrCer_1000\exports\';
 folderout = folderin;
 cd(folderin)
 

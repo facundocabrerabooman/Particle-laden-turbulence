@@ -1,9 +1,9 @@
 close all
 clear
 clc
-
+%pause(60*60)
 % input
-fpath0 = 'M:\TrCer_1000\TrCer_1000_49\';
+fpath0 = 'I:\Calib\calib_4-30-24\bench_test\';
 cd(fpath0)
 
 part_radius = 6;
@@ -17,33 +17,41 @@ dfolders = [];
 %%% preproc & split
 datasets = {'fullg','ddt','dec'};
 
-for j = 1:3
+for j = 1%:3
 dataset = datasets{j};
 
     %image_list = dir([subfolders filesep '*.tiff']);
     image_list = dir([fpath filesep 'Camera1' filesep '*.tiff']);
     img_num = size(image_list,1);
-
+ 
+    %Istart = 2;
+    %Iend = img_num-10;
+if pi==pi
     if dataset(1) == 'f'
         Istart = 2;
-        Iend = 9538;
+        Iend = img_num - round(2990*4.1);
     elseif dataset == 'ddt'
-        Istart = 9539;
-        Iend = 15817;
+        Istart = img_num - round(2990*4.1);
+        Iend = img_num - round(2990*2);
     else
-        Istart = 15818;
+        Istart = img_num - round(2990*2);
         Iend = img_num;
     end
+end
+      Istart = 2;
+      Iend=1000;
+      disp('careful here')
+     % pause
 
 
     if numel(dfolders)~=0
         subfolders = [fpath filesep dfolders(i).name];
-        preproc_dirt = [fpath0 filesep 'preproc' filesep 'preproc_tracer_' dataset filesep dfolders(i).name ];
-        preproc_dirp = [fpath0 filesep 'preproc' filesep 'preproc_particle_' dataset filesep dfolders(i).name ];
+        preproc_dirt = [fpath0 filesep 'pre_proc' filesep 'preproc_tracer_' dataset filesep dfolders(i).name ];
+        preproc_dirp = [fpath0 filesep 'pre_proc' filesep 'preproc_particle_' dataset filesep dfolders(i).name ];
     else
         subfolders = fpath;
-        preproc_dirt = [fpath0 filesep 'preproc' filesep 'preproc_tracer_' dataset];
-        preproc_dirp = [fpath0 filesep 'preproc' filesep 'preproc_particle_' dataset];
+        preproc_dirt = [fpath0 filesep 'pre_proc' filesep 'preproc_tracer_' dataset];
+        preproc_dirp = [fpath0 filesep 'pre_proc' filesep 'preproc_particle_' dataset];
     end
     mkdir(preproc_dirt)
     mkdir(preproc_dirp)
@@ -51,24 +59,28 @@ dataset = datasets{j};
 
     %%% get Backgrounds
     %cam 1
-    bkg1_originalSize = getBkg(subfolders,'Camera1',Istart,img_num,100,[]);
+    bkg1_originalSize = getBkg(subfolders,'Camera1',Istart,Iend,1,[]);
+    
     %bkg1_originalSize = imread('/Users/FC/Downloads/im0_c1.tiff');
     %     bkg1 = cast(zeros(1080,1920),class(bkg1_originalSize));
     %     bkg1(285:796,321:1600) = bkg1_originalSize;
     %cam2
-    bkg2_originalSize = getBkg(subfolders,'Camera2',Istart,img_num,100,[]);
+    bkg2_originalSize = getBkg(subfolders,'Camera2',Istart,Iend,1,[]);
+    
     %bkg2_originalSize = imread('/Users/FC/Downloads/im0_c2.tiff');
     %     bkg2 = cast(zeros(1080,1920),class(bkg2_originalSize));
     %     bkg2(285:796,321:1600) = bkg2_originalSize;
 
     %cam3
-    bkg3_originalSize = getBkg(subfolders,'Camera3',Istart,img_num,100,[]);
+    bkg3_originalSize = getBkg(subfolders,'Camera3',Istart,Iend,1,[]);
+    %disp('no cam3')
     %bkg3_originalSize = imread('/Users/FC/Downloads/im0_c3.tiff');
     %     bkg3 = cast(zeros(1080,1920),class(bkg3_originalSize));
     %     bkg3(285:796,321:1600) = bkg3_originalSize;
     counter = 0;
 
     for k=Istart:Iend
+        %disp('CAREFUL')
         counter = counter+1;
         k/Iend
 
@@ -95,13 +107,14 @@ dataset = datasets{j};
         intensity_thr = 1e3;
         [~,Im2t,Im2p]=Facu_preprocessing(Im2_originalSize,intensity_thr,part_radius,2,bkg2_originalSize);
         fnameo = ['cam2_frame_preproc_' num2str(counter,'%06d') '.tiff'];
-        imwrite(uint16(Im2t),[preproc_dirt filesep fnameo]);
+       imwrite(uint16(Im2t),[preproc_dirt filesep fnameo]);
         imwrite(uint16(Im2p),[preproc_dirp filesep fnameo]);
 %                figure(10);
 %                  subplot(2,1,1);imagesc(Im2_originalSize);axis equal
 %                  subplot(2,1,2);imagesc(Im2p);axis equal
 %                  pause(0.05)
 
+if pi==pi
         %%% cam3
         fname=[subfolders filesep 'Camera3' filesep 'frame_' num2str(k,'%06d') '.tiff'];
         Im3_originalSize = imread(fname);
@@ -116,7 +129,7 @@ dataset = datasets{j};
 %                  subplot(2,1,1);imagesc(Im3_originalSize);axis equal
 %                  subplot(2,1,2);imagesc(Im3p);axis equal
 %                  pause(0.05)
-
+end
     end
 end
 stop

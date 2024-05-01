@@ -1,18 +1,18 @@
-%% Average and filter calibration images _ Bad Light images
-clfc 
+%% Average and filter calibration images 
+close all, clear, clc 
 
-cam = 1;
+cam = 3;
 for frame=1:6
 
 %%%%%%%%%
-pathcalib = ['/Users/fcb/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Calibrations/calib_4-22-24/raw_calib_ims/Camera' num2str(cam) filesep num2str(frame)];
+pathcalib = ['I:\Calib\calib_4-30-24\raw\Camera' num2str(cam) filesep num2str(frame)];
 
-pathout = '/Users/fcb/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Drop Tower Multiphase Flow Project/Calibrations/calib_4-22-24/Calib_Ims_4-22-24/';
+pathout = 'I:\Calib\calib_4-30-24\Calib_Ims_4-30-24\';
 
 fname = ['cam' num2str(cam) '_frame_preproc_00000' num2str(frame)];
 
 mkdir(pathout)
-cd(pathout)
+cd(pathout) 
 image_list = dir([pathcalib filesep '*.tiff']);
 
 imsum = zeros(512,1280);
@@ -23,8 +23,8 @@ for i=5:numel(image_list)
 end
 
 imaver = uint16(imsum./numel(image_list));
+%imshow(imaver)
 
-% imshow(imaver)
 % roi_mask = roipoly();
 % imaver(~roi_mask) = 0;
 
@@ -34,7 +34,6 @@ st=strel('disk',1);
 imaver=imopen(imaver,st);
 %imaver=imadjust(imaver);
 
-
 imshow(imaver)
 
 imwrite(uint16(imaver),[pathout filesep fname '.tiff'])
@@ -43,15 +42,15 @@ end
 
 
 %% Average and filter calibration images _ Front Light images old
-clfc
+close all, clear, clc
 
 cam = 3;
 for frame=1:6
 
 %%%%%%%%%
-pathcalib = ['/Users/fcb/AuxFiles/calib_4-12-24/Camera' num2str(cam) filesep num2str(frame)];
+pathcalib = ['I:\Calib\TrCer_1000\Calib_4-18-24\raw\Camera' num2str(cam) filesep num2str(frame)];
 
-pathout = '/Users/fcb/AuxFiles/calib_4-12-24';
+pathout = 'I:\Calib\TrCer_1000\Calib_4-18-24\';
 
 fname = ['cam' num2str(cam) '_frame_preproc_00000' num2str(frame)];
 

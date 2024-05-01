@@ -29,24 +29,30 @@ for i = 1:length(stats)
     end
 end
 
-centroid = filteredRegions(1).Centroid;
-radii = (filteredRegions(1).MajorAxisLength + filteredRegions(1).MinorAxisLength)/4;
+if numel(filteredRegions)==1
+
+    centers = filteredRegions(1).Centroid;
+    radii = (filteredRegions(1).MajorAxisLength + filteredRegions(1).MinorAxisLength)/4;
 
 
-if plotflag == 1
-    figure(1);clf
-    imshow(binaryImage);
-    hold on;
-    for i = 1:length(filteredRegions)
-        centroid = filteredRegions(i).Centroid;
-        majorAxisLength = filteredRegions(i).MajorAxisLength / 2;
-        minorAxisLength = filteredRegions(i).MinorAxisLength / 2;
-        plot(centroid(1), centroid(2), 'r*'); % Mark centroid
-        rectangle('Position',[centroid(1)-majorAxisLength, centroid(2)-minorAxisLength, ...
-            2*majorAxisLength, 2*minorAxisLength], 'EdgeColor', 'r', 'Curvature', [1 1]); % Draw ellipse
+    if plotflag == 1
+        figure(1);clf
+        imshow(binaryImage);
+        hold on;
+        for i = 1:length(filteredRegions)
+            centroid = filteredRegions(i).Centroid;
+            majorAxisLength = filteredRegions(i).MajorAxisLength / 2;
+            minorAxisLength = filteredRegions(i).MinorAxisLength / 2;
+            plot(centroid(1), centroid(2), 'r*'); % Mark centroid
+            rectangle('Position',[centroid(1)-majorAxisLength, centroid(2)-minorAxisLength, ...
+                2*majorAxisLength, 2*minorAxisLength], 'EdgeColor', 'r', 'Curvature', [1 1]); % Draw ellipse
+        end
+        hold off;
+        pause(0.2)
     end
-    hold off;
+
+else
+    centers = [];
+    radii=[];
 end
-
-
 end
