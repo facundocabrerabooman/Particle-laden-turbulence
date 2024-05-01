@@ -3,7 +3,7 @@ clfc
 
 addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence/'));
 
-folderout = '/Volumes/landau1/TrCer_analysis_paper#1/slipVel/';
+folderout = '/Users/fcb/Downloads/slipVel_gand0g/';
 mkdir(folderout)
 cd(folderout)
 
@@ -13,10 +13,10 @@ cd(folderout)
 
 %%% Load slip velocities for fullg-ddt-dec
 
-load('/Volumes/landau1/TrCer_analysis_paper#1/exports/slipVeloData/slipVeloData_R_10/slipVelCylind_ddt_CONC.mat','AverSlipVelCylind_conc');
+load('/Users/fcb/Downloads/slipVeloData/slipVeloData_R_8/slipVelCylind_ddt_CONC.mat','AverSlipVelCylind_conc');
 AverSlipVelCylind_conc_ddt_R6 = AverSlipVelCylind_conc; clear AverSlipVelCylind_conc
 
-load('/Volumes/landau1/TrCer_analysis_paper#1/exports/slipVeloData/slipVeloData_R_10/slipVelCylind_fullg_CONC.mat','AverSlipVelCylind_conc');
+load('/Users/fcb/Downloads/slipVeloData/slipVeloData_R_8/slipVelCylind_fullg_CONC.mat','AverSlipVelCylind_conc');
 AverSlipVelCylind_conc_fullg_R6 = AverSlipVelCylind_conc; clear AverSlipVelCylind_conc
 
 
@@ -30,12 +30,13 @@ tracklong_noturb = tracklong_noturb(Ine);
 
 % Fullg particles
 load('/Volumes/landau1/TrCer_analysis_paper#1/exports/particles/fullg/trajsf_TrCer_1000_01_fullg_particle.mat')
+%load('/Users/fcb/Downloads/particles/fullg/trajsf_TrCer_1000_09_fullg_particle.mat')
 tracklong_fullg = tracklong; clear tracklong
 Ine=find(arrayfun(@(X)(~isempty(X.Vx)),tracklong_fullg)==1);
 tracklong_fullg = tracklong_fullg(Ine);
 
 % DDT particles
-load('/Volumes/landau1/TrCer_analysis_paper#1/exports/particles/ddt/trajsf_TrCer_1000_01_ddt_particle.mat')
+load('/Users/fcb/Downloads/particles/ddt/trajsf_TrCer_1000_09_ddt_particle.mat')
 tracklong_ddt = tracklong; clear tracklong
 Ine=find(arrayfun(@(X)(~isempty(X.Vx)),tracklong_ddt)==1);
 tracklong_ddt = tracklong_ddt(Ine);
@@ -122,6 +123,55 @@ pdfV(1) = mkpdf5(tracklong_fullg,'Vy',100,10);
 pdfV(2) = mkpdf5(tracklong_ddt,'Vy',100,10);
 %pdfV(3) = mkpdf5(tracklong_dec,'Vy',100,10);
 
+%% Plot Slip Velocity Signal
+
+figure(10);hold on; box on
+vel3d=[];
+start=1;
+finish=100;
+
+counter=0;
+for i=start:finish
+    counter=counter+1;
+    vel3d(counter,:) = AverSlipVelCylind_conc_ddt_R6(i).Urelmean;
+end
+
+plot(vertcat(AverSlipVelCylind_conc_ddt_R6(start:finish).t)./2996,vel3d(:,1),'r.-')
+%plot(vertcat(AverSlipVelCylind_conc_ddt_R6(start:finish).t),vel3d(:,1),'r.-')
+plot(vertcat(AverSlipVelCylind_conc_ddt_R6(start:finish).t)./2996,vel3d(:,2),'g.-')
+plot(vertcat(AverSlipVelCylind_conc_ddt_R6(start:finish).t)./2996,vel3d(:,3),'b.-')
+
+legend({'x','y (g)','z'})
+xlabel('t (s)')
+ylabel('Vel (mm/s)')
+grid on;box on
+
+savefig_FC('velocity_signal',8,6,'pdf')
+savefig_FC('velocity_signal',8,6,'fig')
+
+%% Compute fluctuations
+
+vel3d=[];
+
+for i=1:numel(AverSlipVelCylind_conc_ddt_R6)
+    vel3d(i,:) = AverSlipVelCylind_conc_ddt_R6(i).Urelmean;
+end
+
+sigmax = var(vel3d(:,1))
+sigmay = var(vel3d(:,2))
+sigmaz = var(vel3d(:,3))
+
+%%% fullg
+
+vel3d_fullg=[];
+
+for i=1:numel(AverSlipVelCylind_conc_fullg_R6)
+    vel3d_fullg(i,:) = AverSlipVelCylind_conc_fullg_R6(i).Urelmean;
+end
+
+sigmax = var(vel3d_fullg(:,1))
+sigmay = var(vel3d_fullg(:,2))
+sigmaz = var(vel3d_fullg(:,3))
 %% Vertical velocity versus time bin
 
 figure(1); clf; hold on; grid on; box on
@@ -370,8 +420,8 @@ end
 %%%%%%%%%%%%%%%% plot
 figure(11);clf
 
-scatter3(vertcat(tracklong_fullg.Xf),vertcat(tracklong_fullg.Yf),vertcat(tracklong_fullg.Zf),'bo','filled'); hold on
-scatter3(vertcat(tracklong_ddt.Xf),vertcat(tracklong_ddt.Yf),vertcat(tracklong_ddt.Zf),'mo','filled')
+scatter3(vertcat(tracklong_fullg.Xf),vertcat(tracklong_fullg.Yf),vertcat(tracklong_fullg.Zf),10,'bo','filled'); hold on
+scatter3(vertcat(tracklong_ddt.Xf),vertcat(tracklong_ddt.Yf),vertcat(tracklong_ddt.Zf),10,'mo','filled')
 
 ylabel('Vertical (mm)',FontWeight='bold')
 zlabel('Z (mm)',FontWeight='bold')
@@ -421,7 +471,7 @@ if pi==pi %dont have that data yet
     semilogy(pdfSV(1).xpdf,pdfSV(1).pdf,'r-o',MarkerSize=5,LineWidth=2);hold on
     xline(pdfSV(1).mean,'r',LineWidth=3)
 
-    semilogy(pdfSV(2).xpdf,pdfSV(2).pdf,'g-o',MarkerSize=5,LineWidth=2);
+    semilogy(pdfSV(2).xpdf,pdfSV(2).pdf,'g-o',MarkerSize=5,LineWidth=2);hold on
     xline(pdfSV(2).mean,'g',LineWidth=3)
 
     % semilogy(pdfSV(3).xpdf,pdfSV(3).pdf,'b-o',MarkerSize=5,LineWidth=2);
@@ -505,7 +555,8 @@ yline(mean2,'c',LineWidth=3)
 yline(mean(vertcat(tracklong_noturb.Vy)),'k',LineWidth=3)
 
 
-legend('$SlipV-FULLG$','$SlipV-DDT$','$SlipV-DEC$','FULLG','DDT','DEC','No Turbulence - full g','interpreter','latex',Location='northeast');
+%legend('$SlipV-FULLG$','$SlipV-DDT$','$SlipV-DEC$','FULLG','DDT','DEC','No Turbulence - full g','interpreter','latex',Location='northeast');
+legend('$SlipV-FULLG$','$SlipV-DDT$','FULLG','DDT','No Turbulence - full g','interpreter','latex',Location='northeast');
 ylabel('$PDF(\frac{V-\langle V \rangle}{std(V)})$','interpreter','latex',FontWeight='bold')
 ylabel('Vertical Velocity (mm/s)',FontWeight='bold')
 box on; grid on

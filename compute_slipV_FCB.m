@@ -6,10 +6,11 @@ folderout = '/Users/fcb/Downloads/';
 cd(folderout)
 folderin = '/Users/fcb/Downloads/';
 
-gravity = 'ddt';
+gravity = 'fullg';
+fname = 'TrCer_1000_09_full';
 
-fpathT_tracks = [folderin filesep 'tracers' filesep 'ddt' filesep];
-fpathP_tracks = [folderin filesep 'particles' filesep 'ddt' filesep];
+fpathT_tracks = [folderin filesep 'tracers' filesep 'fullg' filesep];
+fpathP_tracks = [folderin filesep 'particles' filesep 'fullg' filesep];
 %fpathP_tracks = [folderin filesep 'data_Tracers' filesep 'ddt' filesep];
 fpathP_slipVeloData = [folderout filesep 'slipVeloData'];
 
@@ -24,9 +25,9 @@ color5 = [mycolormap(1,:);mycolormap(round((size(mycolormap,1)+1)/4),:);mycolorm
 % set the radius range of the 'tracers shell around big particle'
 Rmin = 0;
 %Rmax = 10;
-Rmax_vector = [2:2:10 15:10:80];
+Rmax_vector = [2:2:10 15:10:60];
 
-for i=1:12
+for i=1:numel(Rmax_vector)
 
     Rmax = Rmax_vector(i);
     fpathP_slipVeloData_tmp = [fpathP_slipVeloData filesep 'slipVeloData_R_' num2str(Rmax) filesep];
@@ -139,9 +140,14 @@ for i=1:numel(nonHiddenFolders_allRs)
                     vertvel = vertcat(slipVelCylind{t}(1:end).Urel);
                     AverSlipVelCylind(t).Urelmean_vert = mean(vertvel(:,2));
                     AverSlipVelCylind(t).Urelstd_vert = std(vertvel(:,2));
-                    AverSlipVelCylind(t).Urelmean = mean(vertcat(slipVelCylind{t}(1:end).Urel));
+                    if numel(vertcat(slipVelCylind{t}(1:end).Urel)) ~= 3
+                        AverSlipVelCylind(t).Urelmean = mean(vertcat(slipVelCylind{t}(1:end).Urel));
+                        else
+                        AverSlipVelCylind(t).Urelmean = slipVelCylind{t}(1:end).Urel;
+                    end
                     AverSlipVelCylind(t).Urelstd = std(vertcat(slipVelCylind{t}(1:end).Urel));
                     AverSlipVelCylind(t).Urel = vertcat(slipVelCylind{t}(1:end).Urel);
+
                     AverSlipVelCylind(t).t = mean([slipVelCylind{t}(1:end).t]);
                 end
 
@@ -160,21 +166,62 @@ for i=1:numel(nonHiddenFolders_allRs)
     errors2
 end
 
-%% Plot Urel versus each Radius
+%% Plot # of tracers versus R
 
 files_allRs=dir(fullfile([cd filesep 'slipVeloData' filesep])); % have to change slipvelodata by slipvelodata_R_XXX
 nonHiddenFolders_allRs = files_allRs(~startsWith({files_allRs.name}, '.'));
 
 for k = 1:numel(nonHiddenFolders_allRs)
+    path_tmp = [nonHiddenFolders_allRs(k).folder filesep nonHiddenFolders_allRs(k).name filesep fname filesep];
+    particles = dir([path_tmp '*.mat']);
+    number_tracers_per_frame =[];
+    number_front_tracers_per_frame=[];
+    for i=1:numel(particles)
+        load([path_tmp filesep particles(i).name],'neighborIdxAll')
+        for j = 1:numel(neighborIdxAll)
+            number_tracers_per_frame = [number_tracers_per_frame; numel(neighborIdxAll(j).idx)];
+            number_front_tracers_per_frame = [number_front_tracers_per_frame; numel(neighborIdxAll(j).idxfront)];
+        end
+    end
+       scatter(neighborIdxAll(1).Rmax, mean(number_tracers_per_frame),100,'ro','filled');hold on
+       errorbar(neighborIdxAll(1).Rmax, mean(number_tracers_per_frame),std(number_tracers_per_frame),std(number_tracers_per_frame),'r')
+       scatter(neighborIdxAll(1).Rmax, mean(number_front_tracers_per_frame),100,'b^','filled')
+       errorbar(neighborIdxAll(1).Rmax, mean(number_front_tracers_per_frame),std(number_front_tracers_per_frame),std(number_front_tracers_per_frame),'b')
 
-    load([nonHiddenFolders_allRs(k).folder filesep nonHiddenFolders_allRs(k).name filesep 'slipVelCylind_ddt_CONC.mat'])
+end
+
+xlabel('R')
+ylabel('# Tracers')
+legend({'Number of Tracers','std','Number of FRONT Tracers','std'},'Location','NorthWest')
+box, grid
+xlim([5 20])
+
+savefig_FC('front_tracers_vs_R_fullg',8,6,'fig')
+savefig_FC('front_tracers_vs_R_fullg',8,6,'pdf')
+
+
+%% Plot Urel versus each Radius
+figure;
+files_allRs=dir(fullfile([cd filesep 'slipVeloData' filesep])); % have to change slipvelodata by slipvelodata_R_XXX
+nonHiddenFolders_allRs = files_allRs(~startsWith({files_allRs.name}, '.'));
+
+for k = 1:numel(nonHiddenFolders_allRs)
+
+    load([nonHiddenFolders_allRs(k).folder filesep nonHiddenFolders_allRs(k).name filesep 'slipVelCylind_fullg_CONC.mat'])
     
-    scatter(mean([AverSlipVelCylind_conc.rho]), mean([AverSlipVelCylind_conc.Urelmean_vert]),'ro');hold on
+    scatter(mean([AverSlipVelCylind_conc.rho]), mean([AverSlipVelCylind_conc.Urelmean_vert]),100,'ro','filled');hold on
 
 end
 
 
+xlabel('R')
+ylabel('Urel_vertical (mm/s)')
+box, grid
 
+savefig_FC('Urel_vs_R_fullg',8,6,'fig')
+savefig_FC('Urel_vs_R_fullg',8,6,'pdf')
+
+stop
 %% Plot distributions of slip velocity with each tracer versus r
 
 % load('/Users/fcb/AuxFiles/exports/15_test/particle/tracks/tracks_1.mat','tracklong')

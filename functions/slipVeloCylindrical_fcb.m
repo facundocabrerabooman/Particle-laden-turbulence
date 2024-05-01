@@ -38,7 +38,9 @@ tend = numel(neighborIdxAll);
 for t = tstart:tend
 
     % Prepare indices for searching
+    %idx_front_back = sort(vertcat(neighborIdxAll(t).idx));
     idx_front_back = sort(vertcat(neighborIdxAll(t).idx));
+    disp('only front tracers')
 
     % Initialize structure to store slip velocity information
     slipVeloCylind = struct('rho',[], 'theta',[], 'z',[], 'Urel',[]);

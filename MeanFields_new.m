@@ -5,9 +5,9 @@ addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence'));
 
 fname = 'all_conc';
 
-folderin = '/Volumes/landau1/TrCer_analysis_paper#1/exports/tracers/ddt/';
+folderin = '/Users/fcb/Downloads/tracers/ddt/';
 
-folderout = '/Volumes/landau1/TrCer_analysis_paper#1/analysis_tracers/ddt/';
+folderout = '/Users/fcb/Downloads/analysis_tracers/ddt/';
 mkdir(folderout)
 cd(folderout)
 
@@ -21,17 +21,24 @@ color1 = '#476d76';
 if pi==pi
     trajs_conc = [];
 
-   load([folderin filesep 'trajsf_TrCer_1000_01_ddt_tracer.mat'],'tracklong')
-   trajs_conc = [trajs_conc tracklong];
-1
-    load([folderin filesep 'trajsf1_TrCer_1000_02_ddt_tracer.mat'],'tracklong')
-    trajs_conc = [trajs_conc tracklong];
-2
-    load([folderin filesep 'trajsf2_TrCer_1000_02_ddt_tracer.mat'],'tracklong')
-    trajs_conc = [trajs_conc tracklong];
-3
-     load([folderin filesep 'trajsf_TrCer_1000_04_ddt_tracer.mat'],'tracklong')
+%    load([folderin filesep 'trajsf_TrCer_1000_01_ddt_tracer.mat'],'tracklong')
+%    trajs_conc = [trajs_conc tracklong];
+% 1
+%     load([folderin filesep 'trajsf1_TrCer_1000_02_ddt_tracer.mat'],'tracklong')
+%     trajs_conc = [trajs_conc tracklong];
+% 2
+%     load([folderin filesep 'trajsf2_TrCer_1000_02_ddt_tracer.mat'],'tracklong')
+%     trajs_conc = [trajs_conc tracklong];
+% 3
+%      load([folderin filesep 'trajsf_TrCer_1000_04_ddt_tracer.mat'],'tracklong')
+%      trajs_conc = [trajs_conc tracklong];
+
+     load([folderin filesep 'trajsf_TrCer_1000_09_ddt_tracer.mat'],'tracklong')
      trajs_conc = [trajs_conc tracklong];
+     2
+     load([folderin filesep 'trajsf_TrCer_1000_10_ddt_tracer.mat'],'tracklong')
+     trajs_conc = [trajs_conc tracklong];
+     3
 
     Ine=find(arrayfun(@(X)(~isempty(X.Vx)),trajs_conc)==1);
 
@@ -106,15 +113,12 @@ xlabel('x');
 ylabel('y');
 axis equal;
 hold off;
-
-
-ylim([-25 25])
-xlim([-15 15])
-
-
-
-
+savefig_FC([folderout filesep 'meanfields_center' filesep name],8,6,'fig')
+savefig_FC([folderout filesep 'meanfields_center' filesep name],8,6,'pdf')
 stop
+%ylim([-25 25])
+%xlim([-15 15])
+
 %% Tracer: compute the fluctuation of fluid velocity sigma_u = sqrt(<u'^2>)
 dt = [4 6 8 10];
 nbins = [20 21 22];
