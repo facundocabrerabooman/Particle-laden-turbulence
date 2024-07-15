@@ -3,7 +3,7 @@ clfc
 
 addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence/'));
 
-folderout = '/Users/fcb/Downloads/slipVel_gand0g/';
+folderout = '/Users/fcb/Library/CloudStorage/GoogleDrive-facundo@pdx.edu/My Drive/Manuscripts/rsi_ddt/inertial_cer/g&ug';
 mkdir(folderout)
 cd(folderout)
 
@@ -13,11 +13,11 @@ cd(folderout)
 
 %%% Load slip velocities for fullg-ddt-dec
 
-load('/Users/fcb/Downloads/slipVeloData/slipVeloData_R_8/slipVelCylind_ddt_CONC.mat','AverSlipVelCylind_conc');
-AverSlipVelCylind_conc_ddt_R6 = AverSlipVelCylind_conc; clear AverSlipVelCylind_conc
+load('/Volumes/landau1/TrCer_analysis_paper#1/inertial_analysis/slipVeloData/slipVeloData_R_10/slipVelCylind_ddt_CONC.mat','AverSlipVelCylind_conc');
+AverSlipVelCylind_conc_ddt_R10 = AverSlipVelCylind_conc; clear AverSlipVelCylind_conc
 
-load('/Users/fcb/Downloads/slipVeloData/slipVeloData_R_8/slipVelCylind_fullg_CONC.mat','AverSlipVelCylind_conc');
-AverSlipVelCylind_conc_fullg_R6 = AverSlipVelCylind_conc; clear AverSlipVelCylind_conc
+load('/Volumes/landau1/TrCer_analysis_paper#1/inertial_analysis/slipVeloData/slipVeloData_R_10/slipVelCylind_fullg_CONC.mat','AverSlipVelCylind_conc');
+AverSlipVelCylind_conc_fullg_R10 = AverSlipVelCylind_conc; clear AverSlipVelCylind_conc
 
 
 %%% Load particle velocities
@@ -29,14 +29,14 @@ Ine=find(arrayfun(@(X)(~isempty(X.Vx)),tracklong_noturb)==1);
 tracklong_noturb = tracklong_noturb(Ine);
 
 % Fullg particles
-load('/Volumes/landau1/TrCer_analysis_paper#1/exports/particles/fullg/trajsf_TrCer_1000_01_fullg_particle.mat')
+load('/Volumes/landau1/TrCer_analysis_paper#1/inertial_analysis/exports/particle_fullg_conc.mat')
 %load('/Users/fcb/Downloads/particles/fullg/trajsf_TrCer_1000_09_fullg_particle.mat')
 tracklong_fullg = tracklong; clear tracklong
 Ine=find(arrayfun(@(X)(~isempty(X.Vx)),tracklong_fullg)==1);
 tracklong_fullg = tracklong_fullg(Ine);
 
 % DDT particles
-load('/Users/fcb/Downloads/particles/ddt/trajsf_TrCer_1000_09_ddt_particle.mat')
+load('/Volumes/landau1/TrCer_analysis_paper#1/inertial_analysis/exports/particle_ddt_conc.mat')
 tracklong_ddt = tracklong; clear tracklong
 Ine=find(arrayfun(@(X)(~isempty(X.Vx)),tracklong_ddt)==1);
 tracklong_ddt = tracklong_ddt(Ine);
@@ -48,7 +48,7 @@ tracklong_ddt = tracklong_ddt(Ine);
 
 %% Substract Mean Flow
 clc
-load('/Volumes/landau1/TrCer_analysis_paper#1/analysis_tracers/fullg/MeanFlow_Interpolant.mat')
+load('/Volumes/landau1/TrCer_analysis_paper#1/tracer_analysis/fullg/MeanFlow_Interpolant.mat')
 Fx_fullg = Fx;
 Fy_fullg = Fy;
 Fz_fullg = Fz;
@@ -68,7 +68,7 @@ for i=1:numel(tracklong_fullg)
 end
 
 
-load('/Volumes/landau1/TrCer_analysis_paper#1/analysis_tracers/ddt/MeanFlow_Interpolant.mat')
+load('/Volumes/landau1/TrCer_analysis_paper#1/tracer_analysis/ddt/MeanFlow_Interpolant.mat')
 Fx_ddt = Fx;
 Fy_ddt = Fy;
 Fz_ddt = Fz; clear Fx Fy Fz
@@ -133,13 +133,13 @@ finish=100;
 counter=0;
 for i=start:finish
     counter=counter+1;
-    vel3d(counter,:) = AverSlipVelCylind_conc_ddt_R6(i).Urelmean;
+    vel3d(counter,:) = AverSlipVelCylind_conc_ddt_R10(i).Urelmean;
 end
 
-plot(vertcat(AverSlipVelCylind_conc_ddt_R6(start:finish).t)./2996,vel3d(:,1),'r.-')
-%plot(vertcat(AverSlipVelCylind_conc_ddt_R6(start:finish).t),vel3d(:,1),'r.-')
-plot(vertcat(AverSlipVelCylind_conc_ddt_R6(start:finish).t)./2996,vel3d(:,2),'g.-')
-plot(vertcat(AverSlipVelCylind_conc_ddt_R6(start:finish).t)./2996,vel3d(:,3),'b.-')
+plot(vertcat(AverSlipVelCylind_conc_ddt_R10(start:finish).t)./2996,vel3d(:,1),'r.-')
+%plot(vertcat(AverSlipVelCylind_conc_ddt_R10(start:finish).t),vel3d(:,1),'r.-')
+plot(vertcat(AverSlipVelCylind_conc_ddt_R10(start:finish).t)./2996,vel3d(:,2),'g.-')
+plot(vertcat(AverSlipVelCylind_conc_ddt_R10(start:finish).t)./2996,vel3d(:,3),'b.-')
 
 legend({'x','y (g)','z'})
 xlabel('t (s)')
@@ -153,8 +153,8 @@ savefig_FC('velocity_signal',8,6,'fig')
 
 vel3d=[];
 
-for i=1:numel(AverSlipVelCylind_conc_ddt_R6)
-    vel3d(i,:) = AverSlipVelCylind_conc_ddt_R6(i).Urelmean;
+for i=1:numel(AverSlipVelCylind_conc_ddt_R10)
+    vel3d(i,:) = AverSlipVelCylind_conc_ddt_R10(i).Urelmean;
 end
 
 sigmax = var(vel3d(:,1))
@@ -165,8 +165,8 @@ sigmaz = var(vel3d(:,3))
 
 vel3d_fullg=[];
 
-for i=1:numel(AverSlipVelCylind_conc_fullg_R6)
-    vel3d_fullg(i,:) = AverSlipVelCylind_conc_fullg_R6(i).Urelmean;
+for i=1:numel(AverSlipVelCylind_conc_fullg_R10)
+    vel3d_fullg(i,:) = AverSlipVelCylind_conc_fullg_R10(i).Urelmean;
 end
 
 sigmax = var(vel3d_fullg(:,1))
@@ -439,17 +439,17 @@ savefig_FC([folderout_tmp filesep 'traj3D'],8,6,'fig')
 %% PDFs
 
 %%% Create variable with velocity to use mkpdf5
-for j=1:numel(AverSlipVelCylind_conc_fullg_R6)
-    AverSlipVelCylind_conc_fullg_R6(j).VerticalVel = AverSlipVelCylind_conc_fullg_R6(j).Urel(:,2);
+for j=1:numel(AverSlipVelCylind_conc_fullg_R10)
+    AverSlipVelCylind_conc_fullg_R10(j).VerticalVel = AverSlipVelCylind_conc_fullg_R10(j).Urel(:,2);
 end
-for j=1:numel(AverSlipVelCylind_conc_ddt_R6)
-    AverSlipVelCylind_conc_ddt_R6(j).VerticalVel = AverSlipVelCylind_conc_ddt_R6(j).Urel(:,2);
+for j=1:numel(AverSlipVelCylind_conc_ddt_R10)
+    AverSlipVelCylind_conc_ddt_R10(j).VerticalVel = AverSlipVelCylind_conc_ddt_R10(j).Urel(:,2);
 end
 
 
-pdfSV(1) = mkpdf5(AverSlipVelCylind_conc_fullg_R6,'VerticalVel',100,10);
+pdfSV(1) = mkpdf5(AverSlipVelCylind_conc_fullg_R10,'VerticalVel',100,10);
 1
-pdfSV(2) = mkpdf5(AverSlipVelCylind_conc_ddt_R6,'VerticalVel',100,10);
+pdfSV(2) = mkpdf5(AverSlipVelCylind_conc_ddt_R10,'VerticalVel',100,10);
 2
 %pdfSV(3) = mkpdf5(AverSlipVelCylind_conc_dec,'Urelmean_vert',100,5);
 %3
@@ -701,6 +701,14 @@ savefig_FC([folderout_tmp filesep 'vel_vs_R'],8,6,'fig')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% BOTH: slip velocity averaged over experiments
 
+fpathP_slipVeloData = '/Volumes/landau1/TrCer_analysis_paper#1/inertial_analysis/slipVeloData/slipVeloData_R_10/';
+
+Rmin = 0;
+Rmax = 10;
+
+kexp=1;
+Nexp = 1;
+
 % Initialize variables for storing sum and mean of relative velocities
 nbinr = 30;
 nbint = 30;
@@ -719,14 +727,14 @@ fieldname = fieldnames(Urel_allMatrices);
 % Loop over different experiments (kexp)
 for kexp = 1:Nexp
     % Load slip velocity data for the current experiment
-    fname = ['slipVeloCylind_',num2str(kexp),'.mat'];
-    load([fpathP_slipVeloData fname],'slipVeloCylind')
+    fname = 'slipVelCylind_fullg_CONC.mat';
+    load([fpathP_slipVeloData fname],'AverSlipVelCylind_conc')
 
     % Extract relevant columns from slip velocity data
-    rho = vertcat(slipVeloCylind.rho);
-    theta = vertcat(slipVeloCylind.theta);
-    z = vertcat(slipVeloCylind.z);
-    urel = vertcat(slipVeloCylind.Urel);
+    rho = vertcat(AverSlipVelCylind_conc_fullg_R10.rho);
+    theta = vertcat(AverSlipVelCylind_conc_fullg_R10.theta);
+    z = vertcat(AverSlipVelCylind_conc_fullg_R10.z);
+    urel = vertcat(AverSlipVelCylind_conc_fullg_R10.Urel);
 
     Urel.x = urel(:,1);
     Urel.y = urel(:,2);
@@ -759,7 +767,7 @@ for i = 1:numel(fieldname)
 end
 clear Urel_allMatrices
 
-save([fpathP_slipVeloData 'averUrel.mat'],'averMeanUrel','averStdUrel','countUrel')
+save('averUrel.mat','averMeanUrel','averStdUrel','countUrel')
 
 %% Plot the binned mean values using pseudocolor
 
@@ -798,8 +806,8 @@ for i = 1:2
         %     rectangle('Position', [[0, 0] - 1, 2*1, 2*1]*2/etaK, 'Curvature', [1, 1], 'EdgeColor', 'r','LineStyle','--',LineWidth=2);
         ylabel(col,colstr,'interpreter','latex')
         col.TickLabelInterpreter = "latex";
-        %  savefig_FC([fpathP_slipVeloData filesep fnamestr 'Urel_' fnamesub{kf}],8,6,'pdf')
-        stop
+         savefig_FC([folderout filesep fnamestr 'Urel_' fnamesub{kf}],8,6,'pdf')
+        
     end
 end
 
@@ -809,7 +817,7 @@ xlabel('$z/\eta_K$');
 ylabel('$r/\eta_K$');
 % colormap(parula(32))
 col =colorbar;
-caxis([100 5000])
+caxis([0 500])
 hold on
 rectangle('Position', [[0, 0] - 0.5, 2*0.5, 2*0.5]/etaKMMS, 'Curvature', [1, 1], 'EdgeColor', 'b','FaceColor','k');
 quiver(0, 0, 4/etaKMMS, 0, 0, 'r', 'LineWidth', 6);
@@ -817,5 +825,5 @@ rectangle('Position', [[0, 0] - 1, 2*1, 2*1]*2/etaKMMS, 'Curvature', [1, 1], 'Ed
 ylabel(col,'$N_{count}$','interpreter','latex')
 col.TickLabelInterpreter = "latex";
 
-savefig_FC([fpathP_slipVeloData filesep 'Urel_count'],8,6,'pdf')
-savefig_FC([fpathP_slipVeloData filesep 'Urel_count'],8,6,'fig')
+savefig_FC([folderout filesep 'Urel_count'],8,6,'pdf')
+savefig_FC([folderout filesep 'Urel_count'],8,6,'fig')

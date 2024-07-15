@@ -12,8 +12,8 @@ folder = pwd;
 % disp(pwd)
 %%
 mkdir([folder filesep 'temp_pair'])
-for k=1:numel(part)
-display('got rid of parfor')
+parfor k=1:numel(part)
+%display('got rid of parfor')
 %for k=1:numel(part)
     save_temp_pair(folder,part,k)
 end

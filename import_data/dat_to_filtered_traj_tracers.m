@@ -107,8 +107,8 @@ end
 figure(10); clf; hold on; grid on; box on
 %tracklong = traj;
 
-for i=1:numel(tracklong)/100
-p
+for i=1:numel(tracklong)/10
+i
     scatter3(tracklong(i).Xf,tracklong(i).Yf,tracklong(i).Zf, 10, tracklong(i).Vy, 'filled');
     %scatter3(tracklong(i).x,tracklong(i).y,tracklong(i).z, 10, 'filled');
 

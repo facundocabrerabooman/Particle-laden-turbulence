@@ -273,7 +273,8 @@ dRmaxSp = dRmax;
 sigmaV=sqrt(mean(S2long(end-4:end)));
 eulerStats.sigmaVb = sigmaV;
 
-[S2longb dR_edges dR_bins]=histcn([sqrt(dR2')],linspace(-dRmaxSp/(NbinsSp-1)/2,dRmaxSp,NbinsSp),'AccumData',[abs(dV_long).^2],'Fun',@mean);
+[S2longb dR_edges dR_bins]=histcn([sqrt(dR2')],logspace(log10(dRmin),log10(dRmax),Nbins),'AccumData',[abs(dV_long).^2],'Fun',@mean);
+%fcb changed
 r=dR_bins{1};
 
 

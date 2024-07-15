@@ -1,9 +1,9 @@
 function [mygrids,mymeanFields,trackout] = meanFields(track,Fs,dt,nbins,threshold,n,power,gridRange,ifsave)
 
 %% mean fields
-[mXdt, mBxdt, bins, N] = track2meanDxDt3DProfile(track,'Xf',dt,nbins,n,power,'x','cart');
-[mYdt, mBydt, ~, ~] = track2meanDxDt3DProfile(track,'Yf',dt,nbins,n,power,'y','cart');
-[mZdt, mBzdt, ~, ~] = track2meanDxDt3DProfile(track,'Zf',dt,nbins,n,power,'z','cart');
+[mXdt, mBxdt, bins, N] = track2meanDxDt3DProfile(track,'X',dt,nbins,n,power,'x','cart');
+[mYdt, mBydt, ~, ~] = track2meanDxDt3DProfile(track,'Y',dt,nbins,n,power,'y','cart');
+[mZdt, mBzdt, ~, ~] = track2meanDxDt3DProfile(track,'Z',dt,nbins,n,power,'z','cart');
 
 % as dt is intergra array (like [2 4 6 8]), we have to multiply it by Fs^n
 mXdt=mXdt*Fs^n;
@@ -44,8 +44,8 @@ mymeanFields.y = Fy(XX,YY,ZZ);
 mymeanFields.z = Fz(XX,YY,ZZ);
 
 %% prepare for slice visualization
-[mygrids.XX,mygrids.YY,mygrids.ZZ]=meshgrid(yy,xx,zz); 
-%[mygrids.XX,mygrids.YY,mygrids.ZZ]=meshgrid(xx,yy,zz); disp('fcb changed this')
+%[mygrids.XX,mygrids.YY,mygrids.ZZ]=meshgrid(yy,xx,zz); 
+[mygrids.XX,mygrids.YY,mygrids.ZZ]=meshgrid(xx,yy,zz); disp('fcb changed this')
 
 %%
 if ifsave ==1

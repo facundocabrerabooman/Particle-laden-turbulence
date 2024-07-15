@@ -2,12 +2,12 @@
 close all, clear, clc 
 
 cam = 3;
-for frame=1:6
+for frame=1%:6
 
 %%%%%%%%%
-pathcalib = ['I:\Calib\calib_4-30-24\raw\Camera' num2str(cam) filesep num2str(frame)];
+pathcalib = ['/Users/fcb/AuxFiles/test/Camera' num2str(cam) filesep num2str(frame)];
 
-pathout = 'I:\Calib\calib_4-30-24\Calib_Ims_4-30-24\';
+pathout = '/Users/fcb/AuxFiles/test/Calib_Ims_4-30-24/';
 
 fname = ['cam' num2str(cam) '_frame_preproc_00000' num2str(frame)];
 
@@ -34,7 +34,7 @@ st=strel('disk',1);
 imaver=imopen(imaver,st);
 %imaver=imadjust(imaver);
 
-imshow(imaver)
+imagesc(imaver)
 
 imwrite(uint16(imaver),[pathout filesep fname '.tiff'])
 end

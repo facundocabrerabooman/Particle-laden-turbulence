@@ -1,19 +1,19 @@
 clear all;clc;
 
-Fs = 2990;
+Fs = 2996;
 
-folderout = '/Users/fcb/Downloads/';
+folderout = '/Volumes/landau1/inertial_smoothed_trajs/';
 cd(folderout)
-folderin = '/Users/fcb/Downloads/';
+folderin = '/Volumes/landau1/TrCer_analysis_paper#1/inertial_analysis/exports';
+folderin2 = '/Volumes/landau1/inertial_smoothed_trajs/exports';
 
 gravity = 'fullg';
-fname = 'TrCer_1000_09_full';
+fname = 'slipVelCylind_fullg_CONC';
 
-fpathT_tracks = [folderin filesep 'tracers' filesep 'fullg' filesep];
-fpathP_tracks = [folderin filesep 'particles' filesep 'fullg' filesep];
-%fpathP_tracks = [folderin filesep 'data_Tracers' filesep 'ddt' filesep];
+fpathT_tracks = [folderin filesep 'tracers' filesep gravity filesep];
+fpathP_tracks = [folderin2 filesep 'particle' filesep gravity filesep];
 fpathP_slipVeloData = [folderout filesep 'slipVeloData'];
-
+mkdir(fpathP_slipVeloData)
 
 addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence/'));
 mycolormap = mycolor('#063970','#e28743');%('#063970','#eeeee4','#e28743')
@@ -22,10 +22,10 @@ color3 = [mycolormap(1,:);mycolormap((size(mycolormap,1)+1)/2,:);mycolormap(end,
 color5 = [mycolormap(1,:);mycolormap(round((size(mycolormap,1)+1)/4),:);mycolormap(round(2*(size(mycolormap,1)+1)/4),:);mycolormap(round(3*(size(mycolormap,1)+1)/4),:);mycolormap(end,:)];
 
 %% Get slip velocity for different radius
-% set the radius range of the 'tracers shell around big particle'
+% set the radius range of the tracers shell around big particle
 Rmin = 0;
-%Rmax = 10;
 Rmax_vector = [2:2:10 15:10:60];
+%Rmax_vector = 10; % for tests
 
 for i=1:numel(Rmax_vector)
 
@@ -149,6 +149,7 @@ for i=1:numel(nonHiddenFolders_allRs)
                     AverSlipVelCylind(t).Urel = vertcat(slipVelCylind{t}(1:end).Urel);
 
                     AverSlipVelCylind(t).t = mean([slipVelCylind{t}(1:end).t]);
+
                 end
 
 
@@ -168,26 +169,34 @@ end
 
 %% Plot # of tracers versus R
 
+figure(1);clf
+
 files_allRs=dir(fullfile([cd filesep 'slipVeloData' filesep])); % have to change slipvelodata by slipvelodata_R_XXX
 nonHiddenFolders_allRs = files_allRs(~startsWith({files_allRs.name}, '.'));
 
 for k = 1:numel(nonHiddenFolders_allRs)
-    path_tmp = [nonHiddenFolders_allRs(k).folder filesep nonHiddenFolders_allRs(k).name filesep fname filesep];
-    particles = dir([path_tmp '*.mat']);
-    number_tracers_per_frame =[];
-    number_front_tracers_per_frame=[];
-    for i=1:numel(particles)
-        load([path_tmp filesep particles(i).name],'neighborIdxAll')
-        for j = 1:numel(neighborIdxAll)
-            number_tracers_per_frame = [number_tracers_per_frame; numel(neighborIdxAll(j).idx)];
-            number_front_tracers_per_frame = [number_front_tracers_per_frame; numel(neighborIdxAll(j).idxfront)];
+    try
+    folders_inside_slipVeloData_R = dir(fullfile([nonHiddenFolders_allRs(k).folder filesep nonHiddenFolders_allRs(k).name filesep]));
+    nonHiddenFolders_inside_slipVeloData_R = folders_inside_slipVeloData_R(~startsWith({folders_inside_slipVeloData_R.name}, '.'));
+        number_tracers_per_frame =[];
+        number_front_tracers_per_frame=[];
+    for j = 1:numel(nonHiddenFolders_inside_slipVeloData_R)
+        path_tmp = [nonHiddenFolders_allRs(k).folder filesep nonHiddenFolders_allRs(k).name filesep nonHiddenFolders_inside_slipVeloData_R(j).name filesep];
+        particles = dir([path_tmp '*.mat']);
+        for i=1:numel(particles)
+            load([path_tmp filesep particles(i).name],'neighborIdxAll')
+            for j = 1:numel(neighborIdxAll)
+                number_tracers_per_frame = [number_tracers_per_frame; numel(neighborIdxAll(j).idx)];
+                number_front_tracers_per_frame = [number_front_tracers_per_frame; numel(neighborIdxAll(j).idxfront)];
+            end
         end
     end
-       scatter(neighborIdxAll(1).Rmax, mean(number_tracers_per_frame),100,'ro','filled');hold on
-       errorbar(neighborIdxAll(1).Rmax, mean(number_tracers_per_frame),std(number_tracers_per_frame),std(number_tracers_per_frame),'r')
-       scatter(neighborIdxAll(1).Rmax, mean(number_front_tracers_per_frame),100,'b^','filled')
-       errorbar(neighborIdxAll(1).Rmax, mean(number_front_tracers_per_frame),std(number_front_tracers_per_frame),std(number_front_tracers_per_frame),'b')
-
+        scatter(neighborIdxAll(1).Rmax, mean(number_tracers_per_frame),100,'ro','filled');hold on
+        errorbar(neighborIdxAll(1).Rmax, mean(number_tracers_per_frame),std(number_tracers_per_frame),std(number_tracers_per_frame),'r')
+        scatter(neighborIdxAll(1).Rmax, mean(number_front_tracers_per_frame),100,'b^','filled')
+        errorbar(neighborIdxAll(1).Rmax, mean(number_front_tracers_per_frame),std(number_front_tracers_per_frame),std(number_front_tracers_per_frame),'b')
+    catch
+    end
 end
 
 xlabel('R')
@@ -196,8 +205,13 @@ legend({'Number of Tracers','std','Number of FRONT Tracers','std'},'Location','N
 box, grid
 xlim([5 20])
 
-savefig_FC('front_tracers_vs_R_fullg',8,6,'fig')
-savefig_FC('front_tracers_vs_R_fullg',8,6,'pdf')
+savefig_FC(['front_tracers_vs_R_' gravity],8,6,'fig')
+savefig_FC(['front_tracers_vs_R_' gravity],8,6,'pdf')
+
+xlim([5 60])
+
+savefig_FC(['front_tracers_vs_R_' gravity '_zoomed_out'],8,6,'fig')
+savefig_FC(['front_tracers_vs_R_' gravity '_zoomed_out'],8,6,'pdf')
 
 
 %% Plot Urel versus each Radius
@@ -207,9 +221,9 @@ nonHiddenFolders_allRs = files_allRs(~startsWith({files_allRs.name}, '.'));
 
 for k = 1:numel(nonHiddenFolders_allRs)
 
-    load([nonHiddenFolders_allRs(k).folder filesep nonHiddenFolders_allRs(k).name filesep 'slipVelCylind_fullg_CONC.mat'])
+    load([nonHiddenFolders_allRs(k).folder filesep nonHiddenFolders_allRs(k).name filesep 'slipVelCylind_' gravity '_CONC.mat'])
     
-    scatter(mean([AverSlipVelCylind_conc.rho]), mean([AverSlipVelCylind_conc.Urelmean_vert]),100,'ro','filled');hold on
+    scatter(max([AverSlipVelCylind_conc.rho]), mean([AverSlipVelCylind_conc.Urelmean_vert]),100,'ro','filled');hold on
 
 end
 
@@ -218,15 +232,15 @@ xlabel('R')
 ylabel('Urel_vertical (mm/s)')
 box, grid
 
-savefig_FC('Urel_vs_R_fullg',8,6,'fig')
-savefig_FC('Urel_vs_R_fullg',8,6,'pdf')
+savefig_FC(['Urel_vs_R_' gravity],8,6,'fig')
+savefig_FC(['Urel_vs_R_' gravity],8,6,'pdf')
 
-stop
+
 %% Plot distributions of slip velocity with each tracer versus r
 
 % load('/Users/fcb/AuxFiles/exports/15_test/particle/tracks/tracks_1.mat','tracklong')
 % tracklong=tracklong(1);
-load('/Users/fcb/Downloads/slipVeloData/slipVeloData_R_2/TrCer_1000_09_ddt_/slipVelCylind_1.mat','slipVelCylind')
+load('/Users/fcb/Downloads/slipVeloData/slipVeloData_R_2/TrCer_1000_09_fullg_/slipVelCylind_1.mat','slipVelCylind')
 
 tstart = slipVelCylind{1}(1).t;
 tend = slipVelCylind{end}(1).t;

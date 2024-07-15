@@ -69,7 +69,7 @@ for t = tstart:tend
         [slipVeloCylind(i,:).rho, slipVeloCylind(i,:).theta, slipVeloCylind(i,:).z] = cartToCylind(rXp, rXf);
 
         % Calculate relative slip velocity in cylindrical coordinates
-        slipVeloCylind(i,:).Urel = -(rUf - rVp); % FCB changed sign
+        slipVeloCylind(i,:).Urel = (-rUf + rVp); % FCB changed sign
 
         % Record time
         slipVeloCylind(i).t = t;

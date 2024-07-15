@@ -3,11 +3,9 @@
 % Set path were functions will be read from
 addpath(genpath('/Users/fcb/Documents/GitHub/Particle-laden-turbulence'));
 
-fname = 'TrCer_1000_04_ddt_tracer_2111-end';
-fname_tracers = 'TrCer_1000_01_fullg_tracer';
+fname = ['TrCer_1000_09_ddt_particle_smooth9x9'];
 
-folderin = '/Volumes/landau1/TrCer_analysis_paper#1/exports/tracers/ddt/';
-folderin_tracers = '/Volumes/landau1/TrCer_analysis_paper#1/exports/fullg_pairs/';
+folderin = '/Volumes/landau1/inertial_smoothed_trajs/exports/particle/ddt/';
 
 folderout = folderin;
 cd(folderin)
@@ -94,6 +92,8 @@ tracklong = tracklong(Ine);
 
 save(['trajsf_' fname '.mat'],'tracklong')
 
+stop
+
 %% Traj. graph
 
 clear color c
@@ -101,7 +101,7 @@ xt=vertcat(tracklong.x);
 yt=vertcat(tracklong.y);
 zt=vertcat(tracklong.z);
 
-figure(10);clf
+figure
 
 plot3(xt,yt,zt,'.');hold on
 

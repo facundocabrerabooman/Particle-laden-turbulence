@@ -5,9 +5,11 @@ set(gcf, 'PaperUnits', 'inches');
 set(gcf, 'PaperPosition', [0 0 x_width y_width]); %
 
 set(gcf,'PaperSize',[x_width y_width]); %set the paper size to what you want  
-set(gca,'fontsize',20) % one figure, expif ddt exp
+%set(gca,'fontsize',20) % one figure, expif ddt exp
 
-%set(gca,'fontsize',20) % RSI DDT multiphase
+%set(gca,'fontsize',30) % one figure small in jkeynote
+
+set(gca,'fontsize',20) % RSI DDT multiphase
 
 %%%%
 if ~exist('saveflag')
